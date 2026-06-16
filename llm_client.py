@@ -11,7 +11,7 @@ _client: OpenAI | None = None
 def _get_client() -> OpenAI:
     global _client
     if _client is None:
-        _client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+        _client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY, timeout=60.0)
     return _client
 
 
@@ -25,7 +25,7 @@ def ask_llm(
     system_prompt: str,
     user_prompt: str,
     temperature: float = 0.2,
-    max_tokens: int = 2048,
+    max_tokens: int = 1024,
 ) -> str:
     """Call an OpenAI-compatible LLM and return the response text."""
     if not system_prompt and not user_prompt:

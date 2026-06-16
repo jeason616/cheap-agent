@@ -24,8 +24,8 @@ LLM_BASE_URL: str = os.getenv("LLM_BASE_URL", "http://127.0.0.1:11434/v1")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
 LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5-coder:7b")
 
-MAX_FILE_CHARS: int = _env_int("MAX_FILE_CHARS", 20000)
-MAX_OUTPUT_CHARS: int = _env_int("MAX_OUTPUT_CHARS", 12000)
+MAX_FILE_CHARS: int = _env_int("MAX_FILE_CHARS", 8000)
+MAX_OUTPUT_CHARS: int = _env_int("MAX_OUTPUT_CHARS", 6000)
 
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")

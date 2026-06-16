@@ -49,7 +49,7 @@ def analyze_error_log(
 def find_related_files(
     task: str,
     keyword: str | None = None,
-    max_files: int = 200,
+    max_files: int = 100,
 ) -> str:
     """根据任务描述，在项目中找出最相关的文件。"""
     return _safe_call(find_related_files_logic, task, keyword, max_files)
@@ -65,7 +65,7 @@ def generate_test_ideas(
 
 
 @mcp.tool()
-def summarize_project(max_files: int = 300) -> str:
+def summarize_project(max_files: int = 150) -> str:
     """分析项目文件结构，生成项目摘要。"""
     return _safe_call(summarize_project_logic, max_files)
 

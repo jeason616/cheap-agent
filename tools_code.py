@@ -47,7 +47,7 @@ def analyze_error_log_logic(
 def find_related_files_logic(
     task: str,
     keyword: str | None = None,
-    max_files: int = 200,
+    max_files: int = 100,
 ) -> str:
     """List project files and ask the LLM which are most relevant to the task."""
     try:
@@ -84,7 +84,7 @@ def generate_test_ideas_logic(
     return ask_llm(TEST_IDEAS_SYSTEM_PROMPT, user_prompt)
 
 
-def summarize_project_logic(max_files: int = 300) -> str:
+def summarize_project_logic(max_files: int = 150) -> str:
     """Summarize the project structure based on file listing."""
     try:
         files = list_project_files(max_files=max_files)
