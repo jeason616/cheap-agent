@@ -15,6 +15,12 @@ from tools_reading import (
     read_file_around_line_logic,
     search_code_logic,
 )
+from tools_project import (
+    build_project_map_logic,
+    detect_project_profile_logic,
+    summarize_directory_logic,
+    summarize_file_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -100,6 +106,42 @@ def search_code(
 ) -> str:
     """在项目中搜索关键词，返回匹配的文件、行号和内容。不调用 LLM。"""
     return _safe_call(search_code_logic, query, file_glob, max_results, case_sensitive)
+
+
+@mcp.tool()
+def build_project_map(
+    max_files: int = 500,
+    include_symbols: bool = True,
+) -> str:
+    """生成项目结构地图，包含目录、入口、配置、模型、数据等分类。"""
+    return _safe_call(build_project_map_logic, max_files, include_symbols)
+
+
+@mcp.tool()
+def summarize_file(
+    file_path: str,
+    use_llm: bool = True,
+) -> str:
+    """对单个文件生成摘要，包含结构信息和可能用途。"""
+    return _safe_call(summarize_file_logic, file_path, use_llm)
+
+
+@mcp.tool()
+def summarize_directory(
+    dir_path: str = ".",
+    max_files: int = 100,
+    use_llm: bool = True,
+) -> str:
+    """对目录生成摘要，判断目录职责和重要文件。"""
+    return _safe_call(summarize_directory_logic, dir_path, max_files, use_llm)
+
+
+@mcp.tool()
+def detect_project_profile(
+    use_llm: bool = False,
+) -> str:
+    """自动判断项目画像：语言、类型、技术栈、入口、配置等。"""
+    return _safe_call(detect_project_profile_logic, use_llm)
 
 
 if __name__ == "__main__":

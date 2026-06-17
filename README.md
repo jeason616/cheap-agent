@@ -30,6 +30,15 @@
 | `extract_symbols` | 提取文件中的函数、类、import、入口等结构信息 |
 | `search_code` | 在项目中搜索关键词，返回匹配位置 |
 
+### 项目理解工具（增强项目认知）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `build_project_map` | 生成项目结构地图 | 否 |
+| `summarize_file` | 对单个文件生成摘要 | 是（可选） |
+| `summarize_directory` | 对目录生成摘要 | 是（可选） |
+| `detect_project_profile` | 自动判断项目画像 | 否（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -172,6 +181,14 @@ default_tools_approval_mode = "prompt"
 - `search_code(query="calculate_param")` — 搜索关键词在项目中的位置
 - `search_code(query="TODO", file_glob="*.py")` — 只在 Python 文件中搜索 TODO
 
+### 项目理解工具
+
+- `build_project_map()` — 生成项目结构地图，包含目录、入口、配置分类
+- `summarize_file(file_path="src/train.py")` — 总结文件作用和关键符号
+- `summarize_directory(dir_path="models/")` — 总结目录职责和重要文件
+- `detect_project_profile()` — 判断项目类型、技术栈、建议阅读顺序
+- `summarize_file(file_path="src/train.py", use_llm=False)` — 只用规则摘要，不调用 LLM
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -192,7 +209,9 @@ cheap-agent/
 ├── llm_client.py      # OpenAI-compatible LLM 调用
 ├── workspace.py       # 安全文件读取与路径工具
 ├── prompts.py         # 提示词模板
+├── cache.py           # 内存缓存系统
 ├── tools_code.py      # LLM 分析工具逻辑
 ├── tools_reading.py   # 本地读取工具逻辑（不调用 LLM）
+├── tools_project.py   # 项目理解工具逻辑
 └── test_stdio.py      # 冒烟测试
 ```
