@@ -18,7 +18,8 @@ def _env_int(key: str, default: int) -> int:
         return default
 
 
-WORKSPACE_ROOT: Path = Path(os.getenv("WORKSPACE_ROOT", ".")).resolve()
+WORKSPACE_ROOT: Path = Path(os.getenv("WORKSPACE_ROOT") or os.getcwd()).resolve()
+print(f"[config] WORKSPACE_ROOT={WORKSPACE_ROOT}", file=sys.stderr)
 
 LLM_BASE_URL: str = os.getenv("LLM_BASE_URL", "http://127.0.0.1:11434/v1")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
