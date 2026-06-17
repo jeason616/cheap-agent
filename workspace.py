@@ -1,6 +1,8 @@
+import fnmatch
+import time
 from pathlib import Path
 
-from config import MAX_FILE_CHARS, WORKSPACE_ROOT
+from config import MAX_FILE_CHARS, MAX_SCAN_FILE_SIZE_BYTES, WORKSPACE_ROOT
 
 SKIP_DIRS = {
     ".git", ".venv", "venv", "__pycache__", "node_modules",
@@ -21,6 +23,9 @@ ALLOWED_EXTENSIONS = {
 
 MAX_FILE_SIZE = 512 * 1024  # 512 KB
 
+_file_cache: dict[str, tuple[float, list[str]]] = {}
+_CACHE_TTL = 10.0
+
 
 def resolve_safe_path(path: str) -> Path:
     """Resolve a path and ensure it stays inside WORKSPACE_ROOT."""
@@ -33,7 +38,17 @@ def resolve_safe_path(path: str) -> Path:
     return candidate
 
 
-def _is_allowed_file(p: Path) -> bool:
+def get_relative_path(path: Path) -> str:
+    """Return a forward-slash relative path from WORKSPACE_ROOT."""
+    try:
+        rel = path.resolve().relative_to(WORKSPACE_ROOT.resolve())
+    except ValueError:
+        return str(path)
+    return str(rel).replace("\\", "/")
+
+
+def is_allowed_text_file(p: Path) -> bool:
+    """Check if a file has an allowed text extension."""
     if p.suffix.lower() in ALLOWED_EXTENSIONS:
         return True
     if p.name in {"Makefile", "Dockerfile", "CMakeLists.txt", ".gitignore", ".dockerignore"}:
@@ -41,8 +56,17 @@ def _is_allowed_file(p: Path) -> bool:
     return False
 
 
-def _should_skip_dir(name: str) -> bool:
+def is_skipped_dir(name: str) -> bool:
+    """Check if a directory name should be skipped."""
     return name in SKIP_DIRS
+
+
+def _is_allowed_file(p: Path) -> bool:
+    return is_allowed_text_file(p)
+
+
+def _should_skip_dir(name: str) -> bool:
+    return is_skipped_dir(name)
 
 
 def read_text_file(path: str, max_chars: int | None = None) -> str:
@@ -72,7 +96,6 @@ def list_project_files(
     for p in root.rglob("*"):
         if not p.is_file():
             continue
-        # skip hidden / ignored dirs
         rel = p.relative_to(root)
         parts = rel.parts
         if any(_should_skip_dir(part) for part in parts):
@@ -91,3 +114,26 @@ def list_project_files(
             break
 
     return sorted(results)
+
+
+def get_project_files_cached(
+    keyword: str | None = None,
+    max_files: int = 200,
+    file_glob: str = "",
+) -> list[str]:
+    """List project files with a short-lived cache to avoid repeated fs scans."""
+    cache_key = f"{keyword}:{max_files}:{file_glob}"
+    now = time.monotonic()
+
+    if cache_key in _file_cache:
+        ts, cached = _file_cache[cache_key]
+        if now - ts < _CACHE_TTL:
+            return cached
+
+    files = list_project_files(keyword=keyword, max_files=max_files)
+
+    if file_glob:
+        files = [f for f in files if fnmatch.fnmatch(f, file_glob)]
+
+    _file_cache[cache_key] = (now, files)
+    return files

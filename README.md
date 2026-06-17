@@ -12,6 +12,8 @@
 
 ## 提供的 MCP 工具
 
+### LLM 分析工具（需要调用模型）
+
 | 工具 | 作用 |
 |------|------|
 | `review_file` | 审查指定文件的代码质量 |
@@ -19,6 +21,14 @@
 | `find_related_files` | 根据任务描述找相关文件 |
 | `generate_test_ideas` | 为文件生成测试思路 |
 | `summarize_project` | 分析项目结构并生成摘要 |
+
+### 本地读取工具（不调用 LLM，快速响应）
+
+| 工具 | 作用 |
+|------|------|
+| `read_file_around_line` | 读取指定行附近的代码片段，用于报错定位 |
+| `extract_symbols` | 提取文件中的函数、类、import、入口等结构信息 |
+| `search_code` | 在项目中搜索关键词，返回匹配位置 |
 
 ## 安装
 
@@ -56,8 +66,13 @@ LLM_API_KEY=ollama
 LLM_MODEL=qwen2.5-coder:7b
 
 # 截断限制
-MAX_FILE_CHARS=20000
-MAX_OUTPUT_CHARS=12000
+MAX_FILE_CHARS=8000
+MAX_OUTPUT_CHARS=6000
+
+# 本地搜索/扫描限制
+MAX_SCAN_FILE_SIZE_BYTES=2097152
+MAX_SEARCH_RESULTS=50
+MAX_CONTEXT_LINES=200
 
 # MCP transport: stdio 或 streamable-http
 MCP_TRANSPORT=stdio
@@ -142,11 +157,20 @@ default_tools_approval_mode = "prompt"
 
 在 Codex 中，你可以直接使用：
 
+### LLM 分析工具
+
 - `review_file(file_path="src/train.py")` — 审查训练脚本
 - `analyze_error_log(error_log="...")` — 分析报错
 - `find_related_files(task="找出数据加载相关代码", keyword="data")` — 定位相关文件
 - `generate_test_ideas(file_path="src/model.py")` — 生成测试思路
 - `summarize_project()` — 了解项目结构
+
+### 本地读取工具（快速，不调用 LLM）
+
+- `read_file_around_line(file_path="src/train.py", line_number=158)` — 读取报错行附近代码
+- `extract_symbols(file_path="src/model.py")` — 提取函数、类、import 结构
+- `search_code(query="calculate_param")` — 搜索关键词在项目中的位置
+- `search_code(query="TODO", file_glob="*.py")` — 只在 Python 文件中搜索 TODO
 
 ## 安全说明
 
@@ -166,8 +190,9 @@ cheap-agent/
 ├── server.py          # MCP Server 入口
 ├── config.py          # 配置加载
 ├── llm_client.py      # OpenAI-compatible LLM 调用
-├── workspace.py       # 安全文件读取
+├── workspace.py       # 安全文件读取与路径工具
 ├── prompts.py         # 提示词模板
-├── tools_code.py      # MCP 工具业务逻辑
+├── tools_code.py      # LLM 分析工具逻辑
+├── tools_reading.py   # 本地读取工具逻辑（不调用 LLM）
 └── test_stdio.py      # 冒烟测试
 ```

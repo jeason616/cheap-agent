@@ -26,6 +26,9 @@ LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5-coder:7b")
 
 MAX_FILE_CHARS: int = _env_int("MAX_FILE_CHARS", 8000)
 MAX_OUTPUT_CHARS: int = _env_int("MAX_OUTPUT_CHARS", 6000)
+MAX_SCAN_FILE_SIZE_BYTES: int = _env_int("MAX_SCAN_FILE_SIZE_BYTES", 2 * 1024 * 1024)
+MAX_SEARCH_RESULTS: int = _env_int("MAX_SEARCH_RESULTS", 50)
+MAX_CONTEXT_LINES: int = _env_int("MAX_CONTEXT_LINES", 200)
 
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
