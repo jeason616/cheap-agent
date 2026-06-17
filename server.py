@@ -27,6 +27,12 @@ from tools_diagnostics import (
     diagnose_training_error_logic,
     suggest_debug_steps_logic,
 )
+from tools_testing import (
+    check_config_consistency_logic,
+    generate_unit_test_plan_logic,
+    suggest_minimal_repro_logic,
+    suggest_validation_plan_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -188,6 +194,49 @@ def suggest_debug_steps(
 ) -> str:
     """根据问题描述和错误日志，生成结构化调试计划和排查步骤。"""
     return _safe_call(suggest_debug_steps_logic, problem_description, error_log, use_project_profile, use_llm)
+
+
+@mcp.tool()
+def suggest_minimal_repro(
+    problem_description: str,
+    error_log: str = "",
+    related_file: str = "",
+    use_llm: bool = True,
+) -> str:
+    """根据问题描述、错误日志、相关文件生成最小复现方案。只生成方案，不创建文件。"""
+    return _safe_call(suggest_minimal_repro_logic, problem_description, error_log, related_file, use_llm)
+
+
+@mcp.tool()
+def generate_unit_test_plan(
+    file_path: str,
+    target_symbol: str = "",
+    test_goal: str = "",
+    use_llm: bool = True,
+) -> str:
+    """针对指定文件或符号生成单元测试计划。只生成计划，不创建测试文件。"""
+    return _safe_call(generate_unit_test_plan_logic, file_path, target_symbol, test_goal, use_llm)
+
+
+@mcp.tool()
+def check_config_consistency(
+    config_path: str = "",
+    code_hint: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查配置文件与代码之间的不一致风险。只读检查，不修改文件。"""
+    return _safe_call(check_config_consistency_logic, config_path, code_hint, use_llm)
+
+
+@mcp.tool()
+def suggest_validation_plan(
+    task_description: str,
+    changed_files: str = "",
+    error_log: str = "",
+    use_llm: bool = True,
+) -> str:
+    """根据任务描述和修改文件生成验证计划。只建议步骤，不执行命令。"""
+    return _safe_call(suggest_validation_plan_logic, task_description, changed_files, error_log, use_llm)
 
 
 if __name__ == "__main__":

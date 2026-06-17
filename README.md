@@ -48,6 +48,15 @@
 | `diagnose_training_error` | 诊断 CUDA OOM、shape mismatch、数据加载等训练错误 | 是（可选） |
 | `suggest_debug_steps` | 根据问题描述生成结构化调试计划 | 是（可选） |
 
+### 测试和验证工具（增强测试能力）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `suggest_minimal_repro` | 根据问题描述生成最小复现方案 | 是（可选） |
+| `generate_unit_test_plan` | 为文件或符号生成单元测试计划 | 是（可选） |
+| `check_config_consistency` | 检查配置文件与代码之间的不一致风险 | 是（可选） |
+| `suggest_validation_plan` | 根据任务描述和修改文件生成验证计划 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -207,6 +216,17 @@ default_tools_approval_mode = "prompt"
 - `diagnose_training_error(error_log="...", project_hint="YOLO project using ultralytics")` — 带项目上下文诊断
 - `suggest_debug_steps(problem_description="训练时 loss 为 NaN")` — 生成调试计划
 
+### 测试和验证工具
+
+- `suggest_minimal_repro(problem_description="forward 报错")` — 生成最小复现方案
+- `suggest_minimal_repro(problem_description="...", related_file="src/model.py")` — 带相关文件的复现方案
+- `generate_unit_test_plan(file_path="src/utils.py")` — 为文件生成测试计划
+- `generate_unit_test_plan(file_path="src/utils.py", target_symbol="calculate_param")` — 为特定函数生成测试计划
+- `check_config_consistency()` — 检查配置文件一致性
+- `check_config_consistency(config_path=".env.example")` — 检查特定配置文件
+- `suggest_validation_plan(task_description="修改了训练脚本")` — 生成验证计划
+- `suggest_validation_plan(task_description="...", changed_files="src/train.py\nconfig.py")` — 带修改文件的验证计划
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -232,5 +252,6 @@ cheap-agent/
 ├── tools_reading.py   # 本地读取工具逻辑（不调用 LLM）
 ├── tools_project.py   # 项目理解工具逻辑
 ├── tools_diagnostics.py # 错误诊断工具逻辑
+├── tools_testing.py   # 测试和验证工具逻辑
 └── test_stdio.py      # 冒烟测试
 ```

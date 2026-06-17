@@ -44,6 +44,14 @@ ENABLE_DIAGNOSTIC_CACHE: bool = os.getenv("ENABLE_DIAGNOSTIC_CACHE", "true").low
 DIAGNOSTIC_CACHE_TTL_SEC: int = _env_int("DIAGNOSTIC_CACHE_TTL_SEC", 300)
 ENABLE_LLM_DIAGNOSTICS: bool = os.getenv("ENABLE_LLM_DIAGNOSTICS", "true").lower() == "true"
 
+ENABLE_TESTING_CACHE: bool = os.getenv("ENABLE_TESTING_CACHE", "true").lower() == "true"
+TESTING_CACHE_TTL_SEC: int = _env_int("TESTING_CACHE_TTL_SEC", 300)
+ENABLE_LLM_TESTING: bool = os.getenv("ENABLE_LLM_TESTING", "true").lower() == "true"
+MAX_REPRO_CONTEXT_FILES: int = _env_int("MAX_REPRO_CONTEXT_FILES", 5)
+MAX_CHANGED_FILES_FOR_VALIDATION: int = _env_int("MAX_CHANGED_FILES_FOR_VALIDATION", 20)
+MAX_CONFIG_FILES_TO_CHECK: int = _env_int("MAX_CONFIG_FILES_TO_CHECK", 30)
+MASK_SECRET_VALUES: bool = os.getenv("MASK_SECRET_VALUES", "true").lower() == "true"
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)
