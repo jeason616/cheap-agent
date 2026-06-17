@@ -21,6 +21,12 @@ from tools_project import (
     summarize_directory_logic,
     summarize_file_logic,
 )
+from tools_diagnostics import (
+    analyze_traceback_with_context_logic,
+    diagnose_import_error_logic,
+    diagnose_training_error_logic,
+    suggest_debug_steps_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -142,6 +148,46 @@ def detect_project_profile(
 ) -> str:
     """自动判断项目画像：语言、类型、技术栈、入口、配置等。"""
     return _safe_call(detect_project_profile_logic, use_llm)
+
+
+@mcp.tool()
+def analyze_traceback_with_context(
+    error_log: str,
+    context_lines: int = 60,
+    use_llm: bool = True,
+) -> str:
+    """解析 Python traceback，自动读取项目内相关代码上下文并分析错误原因。"""
+    return _safe_call(analyze_traceback_with_context_logic, error_log, context_lines, use_llm)
+
+
+@mcp.tool()
+def diagnose_import_error(
+    error_log: str,
+    use_llm: bool = True,
+) -> str:
+    """专门诊断 ModuleNotFoundError、ImportError、相对导入错误等导入问题。"""
+    return _safe_call(diagnose_import_error_logic, error_log, use_llm)
+
+
+@mcp.tool()
+def diagnose_training_error(
+    error_log: str,
+    project_hint: str = "",
+    use_llm: bool = True,
+) -> str:
+    """诊断 PyTorch/YOLO 训练推理错误：CUDA OOM、shape mismatch、数据加载等。"""
+    return _safe_call(diagnose_training_error_logic, error_log, project_hint, use_llm)
+
+
+@mcp.tool()
+def suggest_debug_steps(
+    problem_description: str,
+    error_log: str = "",
+    use_project_profile: bool = True,
+    use_llm: bool = True,
+) -> str:
+    """根据问题描述和错误日志，生成结构化调试计划和排查步骤。"""
+    return _safe_call(suggest_debug_steps_logic, problem_description, error_log, use_project_profile, use_llm)
 
 
 if __name__ == "__main__":

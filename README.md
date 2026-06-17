@@ -39,6 +39,15 @@
 | `summarize_directory` | 对目录生成摘要 | 是（可选） |
 | `detect_project_profile` | 自动判断项目画像 | 否（可选） |
 
+### 错误诊断工具（增强报错定位）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `analyze_traceback_with_context` | 解析 traceback，读取项目内代码上下文并分析 | 是（可选） |
+| `diagnose_import_error` | 诊断 ModuleNotFoundError、ImportError 等导入问题 | 是（可选） |
+| `diagnose_training_error` | 诊断 CUDA OOM、shape mismatch、数据加载等训练错误 | 是（可选） |
+| `suggest_debug_steps` | 根据问题描述生成结构化调试计划 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -189,6 +198,15 @@ default_tools_approval_mode = "prompt"
 - `detect_project_profile()` — 判断项目类型、技术栈、建议阅读顺序
 - `summarize_file(file_path="src/train.py", use_llm=False)` — 只用规则摘要，不调用 LLM
 
+### 错误诊断工具
+
+- `analyze_traceback_with_context(error_log="Traceback...")` — 解析 traceback 并读取相关代码上下文
+- `analyze_traceback_with_context(error_log="...", use_llm=False)` — 只用规则分析，不调用 LLM
+- `diagnose_import_error(error_log="ModuleNotFoundError...")` — 诊断导入错误
+- `diagnose_training_error(error_log="CUDA out of memory...")` — 诊断训练错误
+- `diagnose_training_error(error_log="...", project_hint="YOLO project using ultralytics")` — 带项目上下文诊断
+- `suggest_debug_steps(problem_description="训练时 loss 为 NaN")` — 生成调试计划
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -213,5 +231,6 @@ cheap-agent/
 ├── tools_code.py      # LLM 分析工具逻辑
 ├── tools_reading.py   # 本地读取工具逻辑（不调用 LLM）
 ├── tools_project.py   # 项目理解工具逻辑
+├── tools_diagnostics.py # 错误诊断工具逻辑
 └── test_stdio.py      # 冒烟测试
 ```

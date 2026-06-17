@@ -38,6 +38,12 @@ MAX_SUMMARY_FILES: int = _env_int("MAX_SUMMARY_FILES", 100)
 MAX_SYMBOL_FILES_FOR_PROJECT_MAP: int = _env_int("MAX_SYMBOL_FILES_FOR_PROJECT_MAP", 20)
 ENABLE_LLM_FILE_SUMMARY: bool = os.getenv("ENABLE_LLM_FILE_SUMMARY", "true").lower() == "true"
 
+MAX_TRACEBACK_CONTEXT_FILES: int = _env_int("MAX_TRACEBACK_CONTEXT_FILES", 5)
+MAX_TRACEBACK_FRAMES: int = _env_int("MAX_TRACEBACK_FRAMES", 20)
+ENABLE_DIAGNOSTIC_CACHE: bool = os.getenv("ENABLE_DIAGNOSTIC_CACHE", "true").lower() == "true"
+DIAGNOSTIC_CACHE_TTL_SEC: int = _env_int("DIAGNOSTIC_CACHE_TTL_SEC", 300)
+ENABLE_LLM_DIAGNOSTICS: bool = os.getenv("ENABLE_LLM_DIAGNOSTICS", "true").lower() == "true"
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)
