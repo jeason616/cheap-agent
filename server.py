@@ -46,6 +46,13 @@ from tools_cache import (
     get_cached_project_context_logic,
     rebuild_project_index_logic,
 )
+from tools_profile import (
+    build_project_profile_v2_logic,
+    explain_project_conventions_logic,
+    get_codex_onboarding_pack_logic,
+    infer_project_runbook_logic,
+    recommend_workflow_for_task_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -327,6 +334,51 @@ def get_cached_project_context(
 def export_perf_report(limit: int = 100) -> str:
     """输出 MCP 工具性能报告，包含耗时统计和优化建议。"""
     return _safe_call(export_perf_report_logic, limit)
+
+
+@mcp.tool()
+def build_project_profile_v2(
+    use_llm: bool = True,
+    force_refresh: bool = False,
+) -> str:
+    """构建完整项目画像 v2，包含技术栈、入口、配置、测试、运行方式和 Codex 阅读顺序。"""
+    return _safe_call(build_project_profile_v2_logic, use_llm, force_refresh)
+
+
+@mcp.tool()
+def get_codex_onboarding_pack(
+    task_description: str = "",
+    max_items: int = 20,
+    use_llm: bool = False,
+) -> str:
+    """生成简短启动上下文包，帮助 Codex 快速进入项目。默认不调用 LLM。"""
+    return _safe_call(get_codex_onboarding_pack_logic, task_description, max_items, use_llm)
+
+
+@mcp.tool()
+def infer_project_runbook(
+    use_llm: bool = True,
+    include_commands: bool = True,
+) -> str:
+    """推断项目的安装、启动、测试、调试流程。不执行命令，只建议。"""
+    return _safe_call(infer_project_runbook_logic, use_llm, include_commands)
+
+
+@mcp.tool()
+def recommend_workflow_for_task(
+    task_description: str,
+    use_llm: bool = False,
+) -> str:
+    """根据任务描述推荐 MCP 工具调用顺序和优先阅读文件。默认不调用 LLM。"""
+    return _safe_call(recommend_workflow_for_task_logic, task_description, use_llm)
+
+
+@mcp.tool()
+def explain_project_conventions(
+    use_llm: bool = True,
+) -> str:
+    """总结项目开发约定，帮助 Codex 避免破坏已有结构和安全边界。"""
+    return _safe_call(explain_project_conventions_logic, use_llm)
 
 
 if __name__ == "__main__":

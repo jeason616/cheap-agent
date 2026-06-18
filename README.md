@@ -76,6 +76,16 @@
 | `get_cached_project_context` | 快速返回缓存中的项目画像和摘要 | 否 |
 | `export_perf_report` | 输出工具耗时统计和优化建议 | 否 |
 
+### 项目画像与启动上下文工具（增强项目画像）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `build_project_profile_v2` | 构建完整项目画像，包含技术栈、入口、测试、运行方式 | 是（可选） |
+| `get_codex_onboarding_pack` | 生成简短启动上下文包，帮助 Codex 快速进入项目 | 否 |
+| `infer_project_runbook` | 推断安装、启动、测试、调试流程 | 是（可选） |
+| `recommend_workflow_for_task` | 根据任务描述推荐 MCP 工具调用顺序 | 否 |
+| `explain_project_conventions` | 总结项目开发约定 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -264,6 +274,15 @@ default_tools_approval_mode = "prompt"
 - `clear_cache(namespace="all")` — 清理全部缓存
 - `clear_cache(namespace="tool_results")` — 清理指定命名空间
 
+### 项目画像与启动上下文工具
+
+- `get_codex_onboarding_pack()` — 快速获取当前项目启动上下文
+- `get_codex_onboarding_pack(task_description="修复训练报错")` — 带任务的启动上下文
+- `build_project_profile_v2()` — 生成完整项目画像
+- `infer_project_runbook()` — 推断项目安装、启动和测试流程
+- `recommend_workflow_for_task(task_description="修复训练报错")` — 推荐工具调用顺序
+- `explain_project_conventions()` — 总结项目开发约定
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -293,5 +312,6 @@ cheap-agent/
 ├── tools_testing.py   # 测试和验证工具逻辑
 ├── tools_review.py    # 代码审查工具逻辑
 ├── tools_cache.py     # 缓存和记忆工具逻辑
+├── tools_profile.py   # 项目画像与启动上下文工具逻辑
 └── test_stdio.py      # 冒烟测试
 ```

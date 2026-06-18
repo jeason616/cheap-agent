@@ -85,6 +85,24 @@ CACHE_MASK_SECRETS: bool = os.getenv("CACHE_MASK_SECRETS", "true").lower() == "t
 CACHE_WRITE_ATOMIC: bool = os.getenv("CACHE_WRITE_ATOMIC", "true").lower() == "true"
 CACHE_SCHEMA_VERSION: int = _env_int("CACHE_SCHEMA_VERSION", 1)
 
+ENABLE_PROJECT_PROFILE_V2_CACHE: bool = os.getenv("ENABLE_PROJECT_PROFILE_V2_CACHE", "true").lower() == "true"
+PROJECT_PROFILE_V2_CACHE_TTL_SEC: int = _env_int("PROJECT_PROFILE_V2_CACHE_TTL_SEC", 3600)
+ENABLE_ONBOARDING_PACK_CACHE: bool = os.getenv("ENABLE_ONBOARDING_PACK_CACHE", "true").lower() == "true"
+ONBOARDING_PACK_CACHE_TTL_SEC: int = _env_int("ONBOARDING_PACK_CACHE_TTL_SEC", 600)
+ENABLE_RUNBOOK_CACHE: bool = os.getenv("ENABLE_RUNBOOK_CACHE", "true").lower() == "true"
+RUNBOOK_CACHE_TTL_SEC: int = _env_int("RUNBOOK_CACHE_TTL_SEC", 3600)
+ENABLE_CONVENTIONS_CACHE: bool = os.getenv("ENABLE_CONVENTIONS_CACHE", "true").lower() == "true"
+CONVENTIONS_CACHE_TTL_SEC: int = _env_int("CONVENTIONS_CACHE_TTL_SEC", 3600)
+
+MAX_ONBOARDING_ITEMS: int = _env_int("MAX_ONBOARDING_ITEMS", 20)
+MAX_PROFILE_EVIDENCE_ITEMS: int = _env_int("MAX_PROFILE_EVIDENCE_ITEMS", 50)
+MAX_RUNBOOK_COMMANDS: int = _env_int("MAX_RUNBOOK_COMMANDS", 20)
+MAX_CONVENTION_FILES: int = _env_int("MAX_CONVENTION_FILES", 30)
+
+ENABLE_LLM_PROFILE: bool = os.getenv("ENABLE_LLM_PROFILE", "true").lower() == "true"
+ENABLE_LLM_RUNBOOK: bool = os.getenv("ENABLE_LLM_RUNBOOK", "true").lower() == "true"
+ENABLE_LLM_CONVENTIONS: bool = os.getenv("ENABLE_LLM_CONVENTIONS", "true").lower() == "true"
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)
