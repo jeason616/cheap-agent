@@ -66,6 +66,16 @@
 | `post_edit_review` | 修改后做二次审查 | 是（可选） |
 | `analyze_change_impact` | 分析修改的潜在影响范围和引用位置 | 是（可选） |
 
+### 缓存和记忆工具（增强缓存层）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `cache_status` | 查看缓存状态、大小和性能统计 | 否 |
+| `clear_cache` | 清理过期缓存或指定缓存命名空间 | 否 |
+| `rebuild_project_index` | 强制重建项目文件索引 | 否 |
+| `get_cached_project_context` | 快速返回缓存中的项目画像和摘要 | 否 |
+| `export_perf_report` | 输出工具耗时统计和优化建议 | 否 |
+
 ## 安装
 
 ### Linux / macOS
@@ -244,6 +254,16 @@ default_tools_approval_mode = "prompt"
 - `post_edit_review(task_description="...", changed_files="src/model.py", diff_text="...")` — 带 diff 的修改后审查
 - `analyze_change_impact(task_description="修改了函数签名", target_files="src/utils.py")` — 分析影响范围
 
+### 缓存和记忆工具
+
+- `cache_status()` — 查看当前 MCP 缓存状态
+- `rebuild_project_index()` — 强制重建项目文件索引
+- `get_cached_project_context()` — 快速获取缓存中的项目上下文
+- `export_perf_report()` — 分析哪些 MCP 工具最慢
+- `clear_cache()` — 只清理过期缓存
+- `clear_cache(namespace="all")` — 清理全部缓存
+- `clear_cache(namespace="tool_results")` — 清理指定命名空间
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -265,11 +285,13 @@ cheap-agent/
 ├── workspace.py       # 安全文件读取与路径工具
 ├── prompts.py         # 提示词模板
 ├── cache.py           # 内存缓存系统
+├── cache_manager.py   # 磁盘缓存管理
 ├── tools_code.py      # LLM 分析工具逻辑
 ├── tools_reading.py   # 本地读取工具逻辑（不调用 LLM）
 ├── tools_project.py   # 项目理解工具逻辑
 ├── tools_diagnostics.py # 错误诊断工具逻辑
 ├── tools_testing.py   # 测试和验证工具逻辑
 ├── tools_review.py    # 代码审查工具逻辑
+├── tools_cache.py     # 缓存和记忆工具逻辑
 └── test_stdio.py      # 冒烟测试
 ```

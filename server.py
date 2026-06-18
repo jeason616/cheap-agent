@@ -39,6 +39,13 @@ from tools_review import (
     review_diff_logic,
     risk_check_before_edit_logic,
 )
+from tools_cache import (
+    cache_status_logic,
+    clear_cache_logic,
+    export_perf_report_logic,
+    get_cached_project_context_logic,
+    rebuild_project_index_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -285,6 +292,41 @@ def analyze_change_impact(
 ) -> str:
     """分析代码修改的潜在影响范围、引用位置和需要同步修改的内容。"""
     return _safe_call(analyze_change_impact_logic, task_description, target_files, diff_text, use_llm)
+
+
+@mcp.tool()
+def cache_status() -> str:
+    """查看缓存状态、缓存大小、命名空间和近期性能统计。"""
+    return _safe_call(cache_status_logic)
+
+
+@mcp.tool()
+def clear_cache(namespace: str = "") -> str:
+    """清理过期缓存或指定缓存命名空间。只清理缓存目录，不修改项目文件。"""
+    return _safe_call(clear_cache_logic, namespace)
+
+
+@mcp.tool()
+def rebuild_project_index() -> str:
+    """强制重建项目文件索引。不调用 LLM，不读取文件全文。"""
+    return _safe_call(rebuild_project_index_logic)
+
+
+@mcp.tool()
+def get_cached_project_context(
+    include_profile: bool = True,
+    include_map: bool = True,
+    include_recent_summaries: bool = True,
+    max_items: int = 20,
+) -> str:
+    """快速返回已有缓存中的项目画像、项目地图和近期摘要。"""
+    return _safe_call(get_cached_project_context_logic, include_profile, include_map, include_recent_summaries, max_items)
+
+
+@mcp.tool()
+def export_perf_report(limit: int = 100) -> str:
+    """输出 MCP 工具性能报告，包含耗时统计和优化建议。"""
+    return _safe_call(export_perf_report_logic, limit)
 
 
 if __name__ == "__main__":

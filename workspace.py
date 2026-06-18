@@ -137,3 +137,78 @@ def get_project_files_cached(
 
     _file_cache[cache_key] = (now, files)
     return files
+
+
+def build_file_index(max_files: int | None = None) -> list[dict]:
+    """Build a detailed file index with metadata."""
+    from config import MAX_FILE_CHARS as _max
+    limit = max_files or 500
+    root = WORKSPACE_ROOT.resolve()
+    results: list[dict] = []
+
+    for p in root.rglob("*"):
+        if not p.is_file():
+            continue
+        rel = p.relative_to(root)
+        parts = rel.parts
+        if any(_should_skip_dir(part) for part in parts):
+            continue
+        if not _is_allowed_file(p):
+            continue
+
+        try:
+            st = p.stat()
+        except Exception:
+            continue
+
+        if st.st_size > MAX_FILE_SIZE:
+            continue
+
+        rel_str = str(rel).replace("\\", "/")
+        suffix = p.suffix.lstrip(".") if p.suffix else p.name.lower()
+
+        results.append({
+            "path": rel_str,
+            "suffix": suffix,
+            "size": st.st_size,
+            "mtime": st.st_mtime,
+        })
+
+        if len(results) >= limit:
+            break
+
+    results.sort(key=lambda x: x["path"])
+    return results
+
+
+def get_file_index_cached(force_rebuild: bool = False) -> list[dict]:
+    """Get file index with disk cache support."""
+    from cache_manager import get_disk_cache, set_disk_cache, ensure_cache_dir, write_json_cache_atomic
+    from config import FILE_INDEX_CACHE_TTL_SEC, ENABLE_FILE_INDEX_CACHE
+
+    if not force_rebuild and ENABLE_FILE_INDEX_CACHE:
+        cached = get_disk_cache("file_index", "file_index", ttl_sec=FILE_INDEX_CACHE_TTL_SEC)
+        if cached and isinstance(cached, dict) and "files" in cached:
+            return cached["files"]
+
+    index = build_file_index()
+
+    if ENABLE_FILE_INDEX_CACHE:
+        cache_dir = ensure_cache_dir()
+        index_data = {
+            "files": index,
+            "total": len(index),
+            "created_at": time.time(),
+        }
+        write_json_cache_atomic(cache_dir / "file_index.json", index_data)
+        set_disk_cache("file_index", "file_index", index_data, ttl_sec=FILE_INDEX_CACHE_TTL_SEC, tool="build_file_index")
+
+    return index
+
+
+def get_file_index_version(file_index: list[dict]) -> str:
+    """Generate a version hash from file index."""
+    import hashlib
+    parts = [f"{f['path']}:{f['mtime']}:{f['size']}" for f in file_index[:200]]
+    combined = "|".join(parts)
+    return hashlib.md5(combined.encode()).hexdigest()[:12]

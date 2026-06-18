@@ -61,6 +61,30 @@ MAX_IMPACT_SYMBOLS: int = _env_int("MAX_IMPACT_SYMBOLS", 20)
 MAX_IMPACT_REFERENCES: int = _env_int("MAX_IMPACT_REFERENCES", 100)
 MAX_DIFF_FILES: int = _env_int("MAX_DIFF_FILES", 50)
 
+ENABLE_DISK_CACHE: bool = os.getenv("ENABLE_DISK_CACHE", "true").lower() == "true"
+CACHE_DIR: str = os.getenv("CACHE_DIR", ".code_agent_cache")
+CACHE_VERSION: int = _env_int("CACHE_VERSION", 1)
+
+ENABLE_FILE_INDEX_CACHE: bool = os.getenv("ENABLE_FILE_INDEX_CACHE", "true").lower() == "true"
+ENABLE_FILE_SUMMARY_CACHE: bool = os.getenv("ENABLE_FILE_SUMMARY_CACHE", "true").lower() == "true"
+ENABLE_DIRECTORY_SUMMARY_CACHE: bool = os.getenv("ENABLE_DIRECTORY_SUMMARY_CACHE", "true").lower() == "true"
+ENABLE_PROJECT_PROFILE_CACHE: bool = os.getenv("ENABLE_PROJECT_PROFILE_CACHE", "true").lower() == "true"
+ENABLE_TOOL_RESULT_CACHE: bool = os.getenv("ENABLE_TOOL_RESULT_CACHE", "true").lower() == "true"
+ENABLE_PERF_LOG_CACHE: bool = os.getenv("ENABLE_PERF_LOG_CACHE", "true").lower() == "true"
+
+FILE_INDEX_CACHE_TTL_SEC: int = _env_int("FILE_INDEX_CACHE_TTL_SEC", 300)
+FILE_SUMMARY_CACHE_TTL_SEC: int = _env_int("FILE_SUMMARY_CACHE_TTL_SEC", 86400)
+DIRECTORY_SUMMARY_CACHE_TTL_SEC: int = _env_int("DIRECTORY_SUMMARY_CACHE_TTL_SEC", 3600)
+PROJECT_PROFILE_CACHE_TTL_SEC: int = _env_int("PROJECT_PROFILE_CACHE_TTL_SEC", 3600)
+TOOL_RESULT_CACHE_TTL_SEC: int = _env_int("TOOL_RESULT_CACHE_TTL_SEC", 300)
+PERF_LOG_MAX_ENTRIES: int = _env_int("PERF_LOG_MAX_ENTRIES", 1000)
+
+MAX_CACHE_SIZE_MB: int = _env_int("MAX_CACHE_SIZE_MB", 200)
+MAX_CACHE_ENTRY_CHARS: int = _env_int("MAX_CACHE_ENTRY_CHARS", 50000)
+CACHE_MASK_SECRETS: bool = os.getenv("CACHE_MASK_SECRETS", "true").lower() == "true"
+CACHE_WRITE_ATOMIC: bool = os.getenv("CACHE_WRITE_ATOMIC", "true").lower() == "true"
+CACHE_SCHEMA_VERSION: int = _env_int("CACHE_SCHEMA_VERSION", 1)
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)
