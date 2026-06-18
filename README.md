@@ -99,6 +99,16 @@
 | `parse_bib_file` | 解析 BibTeX 文件，输出引用库摘要 | 否 |
 | `check_citation_coverage` | 检查正文 citation keys 与 refs.bib 是否一致 | 否 |
 
+### 论文实验结果与表格核对工具
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `parse_latex_tables` | 解析 LaTeX 表格，提取 caption、label、列名、行名、数值和最佳值标记 | 否 |
+| `extract_experiment_claims` | 从正文中提取实验相关 claim（best/outperform/ablation gain 等） | 是（可选） |
+| `check_result_claim_consistency` | 检查正文实验 claim 是否被表格结果支持 | 是（可选） |
+| `check_ablation_logic` | 检查消融实验是否完整，模块贡献是否清楚 | 是（可选） |
+| `check_metric_consistency` | 检查 mAP、AP50、FPS 等指标格式是否统一 | 否 |
+
 ## 安装
 
 ### Linux / macOS
@@ -306,6 +316,15 @@ default_tools_approval_mode = "prompt"
 - `check_claim_evidence()` — 检查强 claim 是否有 evidence 支撑
 - `parse_bib_file()` — 解析 refs.bib
 - `check_citation_coverage()` — 检查正文引用和 bib 是否一致
+
+### 论文实验结果与表格核对工具
+
+- `parse_latex_tables()` — 解析当前论文中的实验表格
+- `parse_latex_tables(tex_path="sections/experiments.tex")` — 解析指定文件中的表格
+- `extract_experiment_claims()` — 提取实验章节中的性能 claim
+- `check_result_claim_consistency()` — 检查正文和表格结果是否一致
+- `check_ablation_logic()` — 检查消融实验是否支撑方法模块
+- `check_metric_consistency()` — 检查 mAP、AP50、FPS 等指标格式是否统一
 
 ## 安全说明
 

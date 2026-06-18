@@ -121,6 +121,18 @@ PAPER_LLM_TEMPERATURE: float = float(os.getenv("PAPER_LLM_TEMPERATURE", "0.1"))
 
 PAPER_CACHE_DIR: str = os.getenv("PAPER_CACHE_DIR", ".code_agent_cache/paper")
 
+ENABLE_EXPERIMENT_CACHE: bool = os.getenv("ENABLE_EXPERIMENT_CACHE", "true").lower() == "true"
+EXPERIMENT_CACHE_TTL_SEC: int = _env_int("EXPERIMENT_CACHE_TTL_SEC", 600)
+ENABLE_LLM_EXPERIMENT_CHECK: bool = os.getenv("ENABLE_LLM_EXPERIMENT_CHECK", "true").lower() == "true"
+
+MAX_TABLES_TO_PARSE: int = _env_int("MAX_TABLES_TO_PARSE", 20)
+MAX_TABLE_FILES: int = _env_int("MAX_TABLE_FILES", 30)
+MAX_EXPERIMENT_CLAIMS: int = _env_int("MAX_EXPERIMENT_CLAIMS", 50)
+MAX_TABLE_RAW_CHARS: int = _env_int("MAX_TABLE_RAW_CHARS", 30000)
+MAX_TABLE_CELL_CHARS: int = _env_int("MAX_TABLE_CELL_CHARS", 500)
+MAX_METRIC_OCCURRENCES: int = _env_int("MAX_METRIC_OCCURRENCES", 200)
+MAX_EXPERIMENT_OUTPUT_CHARS: int = _env_int("MAX_EXPERIMENT_OUTPUT_CHARS", 12000)
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)
