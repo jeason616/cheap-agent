@@ -10,3 +10,4 @@ build/
 .omx/
 .mcp.json
 AGENTS.md
+.code_agent_cache/
