@@ -52,6 +52,15 @@ MAX_CHANGED_FILES_FOR_VALIDATION: int = _env_int("MAX_CHANGED_FILES_FOR_VALIDATI
 MAX_CONFIG_FILES_TO_CHECK: int = _env_int("MAX_CONFIG_FILES_TO_CHECK", 30)
 MASK_SECRET_VALUES: bool = os.getenv("MASK_SECRET_VALUES", "true").lower() == "true"
 
+ENABLE_REVIEW_CACHE: bool = os.getenv("ENABLE_REVIEW_CACHE", "true").lower() == "true"
+REVIEW_CACHE_TTL_SEC: int = _env_int("REVIEW_CACHE_TTL_SEC", 300)
+ENABLE_LLM_REVIEW: bool = os.getenv("ENABLE_LLM_REVIEW", "true").lower() == "true"
+MAX_DIFF_CHARS: int = _env_int("MAX_DIFF_CHARS", 30000)
+MAX_REVIEW_CHANGED_FILES: int = _env_int("MAX_REVIEW_CHANGED_FILES", 20)
+MAX_IMPACT_SYMBOLS: int = _env_int("MAX_IMPACT_SYMBOLS", 20)
+MAX_IMPACT_REFERENCES: int = _env_int("MAX_IMPACT_REFERENCES", 100)
+MAX_DIFF_FILES: int = _env_int("MAX_DIFF_FILES", 50)
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)

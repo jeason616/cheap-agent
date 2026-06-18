@@ -33,6 +33,12 @@ from tools_testing import (
     suggest_minimal_repro_logic,
     suggest_validation_plan_logic,
 )
+from tools_review import (
+    analyze_change_impact_logic,
+    post_edit_review_logic,
+    review_diff_logic,
+    risk_check_before_edit_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -237,6 +243,48 @@ def suggest_validation_plan(
 ) -> str:
     """根据任务描述和修改文件生成验证计划。只建议步骤，不执行命令。"""
     return _safe_call(suggest_validation_plan_logic, task_description, changed_files, error_log, use_llm)
+
+
+@mcp.tool()
+def review_diff(
+    diff_text: str,
+    task_description: str = "",
+    use_llm: bool = True,
+) -> str:
+    """审查 unified diff，指出潜在 bug、遗漏同步修改和测试缺口。不执行 git diff。"""
+    return _safe_call(review_diff_logic, diff_text, task_description, use_llm)
+
+
+@mcp.tool()
+def risk_check_before_edit(
+    task_description: str,
+    target_files: str = "",
+    use_llm: bool = True,
+) -> str:
+    """修改前根据任务和目标文件分析风险与影响范围。只读分析，不修改文件。"""
+    return _safe_call(risk_check_before_edit_logic, task_description, target_files, use_llm)
+
+
+@mcp.tool()
+def post_edit_review(
+    task_description: str,
+    changed_files: str,
+    diff_text: str = "",
+    use_llm: bool = True,
+) -> str:
+    """修改后根据任务、修改文件和可选 diff 做二次审查。只读审查，不执行命令。"""
+    return _safe_call(post_edit_review_logic, task_description, changed_files, diff_text, use_llm)
+
+
+@mcp.tool()
+def analyze_change_impact(
+    task_description: str,
+    target_files: str = "",
+    diff_text: str = "",
+    use_llm: bool = True,
+) -> str:
+    """分析代码修改的潜在影响范围、引用位置和需要同步修改的内容。"""
+    return _safe_call(analyze_change_impact_logic, task_description, target_files, diff_text, use_llm)
 
 
 if __name__ == "__main__":

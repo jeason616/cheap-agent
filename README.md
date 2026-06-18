@@ -57,6 +57,15 @@
 | `check_config_consistency` | 检查配置文件与代码之间的不一致风险 | 是（可选） |
 | `suggest_validation_plan` | 根据任务描述和修改文件生成验证计划 | 是（可选） |
 
+### 代码审查工具（增强代码审查能力）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `review_diff` | 审查 unified diff，指出潜在 bug 和遗漏同步修改 | 是（可选） |
+| `risk_check_before_edit` | 修改前分析风险与影响范围 | 是（可选） |
+| `post_edit_review` | 修改后做二次审查 | 是（可选） |
+| `analyze_change_impact` | 分析修改的潜在影响范围和引用位置 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -227,6 +236,14 @@ default_tools_approval_mode = "prompt"
 - `suggest_validation_plan(task_description="修改了训练脚本")` — 生成验证计划
 - `suggest_validation_plan(task_description="...", changed_files="src/train.py\nconfig.py")` — 带修改文件的验证计划
 
+### 代码审查工具
+
+- `risk_check_before_edit(task_description="修改训练脚本", target_files="src/train.py")` — 修改前风险分析
+- `review_diff(diff_text="diff --git a/...")` — 审查 diff
+- `post_edit_review(task_description="修复 bug", changed_files="src/model.py")` — 修改后审查
+- `post_edit_review(task_description="...", changed_files="src/model.py", diff_text="...")` — 带 diff 的修改后审查
+- `analyze_change_impact(task_description="修改了函数签名", target_files="src/utils.py")` — 分析影响范围
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -253,5 +270,6 @@ cheap-agent/
 ├── tools_project.py   # 项目理解工具逻辑
 ├── tools_diagnostics.py # 错误诊断工具逻辑
 ├── tools_testing.py   # 测试和验证工具逻辑
+├── tools_review.py    # 代码审查工具逻辑
 └── test_stdio.py      # 冒烟测试
 ```
