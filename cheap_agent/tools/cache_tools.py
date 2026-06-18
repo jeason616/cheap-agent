@@ -4,15 +4,15 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
-from cache_manager import (
+from cheap_agent.cache_manager import (
     clear_cache_namespace,
     ensure_cache_dir,
     get_cache_dir,
     get_cache_stats,
     record_tool_perf,
 )
-from config import ENABLE_DISK_CACHE, PERF_LOG_MAX_ENTRIES, WORKSPACE_ROOT
-from workspace import get_relative_path
+from cheap_agent.config import ENABLE_DISK_CACHE, PERF_LOG_MAX_ENTRIES, WORKSPACE_ROOT
+from cheap_agent.workspace import get_relative_path
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -108,7 +108,7 @@ def clear_cache_logic(namespace: str = "") -> str:
 # ---------------------------------------------------------------------------
 
 def rebuild_project_index_logic() -> str:
-    from workspace import SKIP_DIRS, ALLOWED_EXTENSIONS, MAX_FILE_SIZE
+    from cheap_agent.workspace import SKIP_DIRS, ALLOWED_EXTENSIONS, MAX_FILE_SIZE
 
     start = time.time()
     root = WORKSPACE_ROOT.resolve()
@@ -180,7 +180,7 @@ def rebuild_project_index_logic() -> str:
     }
 
     index_path = cache_dir / "file_index.json"
-    from cache_manager import write_json_cache_atomic
+    from cheap_agent.cache_manager import write_json_cache_atomic
     write_json_cache_atomic(index_path, index_data)
 
     elapsed = time.time() - start
@@ -242,7 +242,7 @@ def get_cached_project_context_logic(
     include_recent_summaries: bool = True,
     max_items: int = 20,
 ) -> str:
-    from cache_manager import get_disk_cache, read_json_cache, get_cache_dir
+    from cheap_agent.cache_manager import get_disk_cache, read_json_cache, get_cache_dir
 
     parts = ["Cached Project Context", ""]
 

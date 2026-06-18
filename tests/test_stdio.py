@@ -4,7 +4,7 @@ import sys
 
 
 def test_config():
-    from config import (
+    from cheap_agent.config import (
         LLM_BASE_URL, LLM_MODEL, MAX_FILE_CHARS, MAX_OUTPUT_CHARS,
         MCP_TRANSPORT, WORKSPACE_ROOT,
     )
@@ -19,7 +19,7 @@ def test_config():
 
 
 def test_workspace():
-    from workspace import list_project_files, read_text_file, resolve_safe_path
+    from cheap_agent.workspace import list_project_files, read_text_file, resolve_safe_path
     safe = resolve_safe_path(".")
     print(f"resolve_safe_path('.') = {safe}")
 
@@ -38,7 +38,7 @@ def test_workspace():
 
 
 def test_llm():
-    from llm_client import ask_llm
+    from cheap_agent.llm_client import ask_llm
     result = ask_llm("You are a test assistant.", "Say 'hello' in one word.", max_tokens=16)
     print(f"LLM response: {result[:200]}")
     assert result and "[LLM Error]" not in result, f"LLM call failed: {result}"
@@ -46,7 +46,7 @@ def test_llm():
 
 
 def test_review():
-    from tools_code import review_file_logic
+    from cheap_agent.tools.code import review_file_logic
     result = review_file_logic("config.py")
     print(f"review_file_logic('config.py') -> {len(result)} chars")
     print(result[:500])

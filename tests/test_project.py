@@ -4,7 +4,7 @@ import sys
 
 
 def test_build_project_map():
-    from tools_project import build_project_map_logic
+    from cheap_agent.tools.project import build_project_map_logic
 
     result = build_project_map_logic(max_files=50)
     assert "Project root:" in result
@@ -21,7 +21,7 @@ def test_build_project_map():
 
 
 def test_summarize_file():
-    from tools_project import summarize_file_logic
+    from cheap_agent.tools.project import summarize_file_logic
 
     result = summarize_file_logic("config.py", use_llm=False)
     assert "File:" in result
@@ -46,7 +46,7 @@ def test_summarize_file():
 
 
 def test_summarize_directory():
-    from tools_project import summarize_directory_logic
+    from cheap_agent.tools.project import summarize_directory_logic
 
     result = summarize_directory_logic(".", max_files=50, use_llm=False)
     assert "Directory:" in result
@@ -70,7 +70,7 @@ def test_summarize_directory():
 
 
 def test_detect_project_profile():
-    from tools_project import detect_project_profile_logic
+    from cheap_agent.tools.project import detect_project_profile_logic
 
     result = detect_project_profile_logic(use_llm=False)
     assert "Project Profile" in result

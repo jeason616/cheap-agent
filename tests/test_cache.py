@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def test_get_cache_dir():
-    from cache_manager import get_cache_dir
+    from cheap_agent.cache_manager import get_cache_dir
 
     cache_dir = get_cache_dir()
     assert cache_dir is not None
@@ -17,7 +17,7 @@ def test_get_cache_dir():
 
 
 def test_write_read_json_cache():
-    from cache_manager import read_json_cache, write_json_cache_atomic
+    from cheap_agent.cache_manager import read_json_cache, write_json_cache_atomic
 
     with tempfile.TemporaryDirectory() as tmpdir:
         path = Path(tmpdir) / "test.json"
@@ -43,7 +43,7 @@ def test_write_read_json_cache():
 
 
 def test_mask_secrets():
-    from cache_manager import mask_secrets
+    from cheap_agent.cache_manager import mask_secrets
 
     text = "API_KEY=secret123\nTOKEN=abc\nnormal=text"
     masked = mask_secrets(text)
@@ -55,7 +55,7 @@ def test_mask_secrets():
 
 
 def test_set_get_disk_cache():
-    from cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache
+    from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache
 
     ensure_cache_dir()
 
@@ -76,7 +76,7 @@ def test_set_get_disk_cache():
 
 
 def test_clear_cache_namespace():
-    from cache_manager import ensure_cache_dir, set_disk_cache, clear_cache_namespace
+    from cheap_agent.cache_manager import ensure_cache_dir, set_disk_cache, clear_cache_namespace
 
     ensure_cache_dir()
     set_disk_cache("test_clear", "key1", "value1")
@@ -88,7 +88,7 @@ def test_clear_cache_namespace():
 
 
 def test_get_cache_stats():
-    from cache_manager import get_cache_stats
+    from cheap_agent.cache_manager import get_cache_stats
 
     stats = get_cache_stats()
     assert "enabled" in stats
@@ -99,7 +99,7 @@ def test_get_cache_stats():
 
 
 def test_cache_status():
-    from tools_cache import cache_status_logic
+    from cheap_agent.tools.cache_tools import cache_status_logic
 
     result = cache_status_logic()
     assert "Cache Status" in result
@@ -109,7 +109,7 @@ def test_cache_status():
 
 
 def test_clear_cache():
-    from tools_cache import clear_cache_logic
+    from cheap_agent.tools.cache_tools import clear_cache_logic
 
     result = clear_cache_logic("")
     assert "Cache Clear" in result
@@ -125,7 +125,7 @@ def test_clear_cache():
 
 
 def test_rebuild_project_index():
-    from tools_cache import rebuild_project_index_logic
+    from cheap_agent.tools.cache_tools import rebuild_project_index_logic
 
     result = rebuild_project_index_logic()
     assert "Project Index Rebuilt" in result
@@ -136,7 +136,7 @@ def test_rebuild_project_index():
 
 
 def test_get_cached_project_context():
-    from tools_cache import get_cached_project_context_logic
+    from cheap_agent.tools.cache_tools import get_cached_project_context_logic
 
     result = get_cached_project_context_logic()
     assert "Cached Project Context" in result
@@ -144,7 +144,7 @@ def test_get_cached_project_context():
 
 
 def test_export_perf_report():
-    from tools_cache import export_perf_report_logic
+    from cheap_agent.tools.cache_tools import export_perf_report_logic
 
     result = export_perf_report_logic()
     assert "Performance Report" in result
@@ -152,13 +152,13 @@ def test_export_perf_report():
 
 
 def test_record_tool_perf():
-    from cache_manager import ensure_cache_dir, record_tool_perf
+    from cheap_agent.cache_manager import ensure_cache_dir, record_tool_perf
 
     ensure_cache_dir()
     record_tool_perf("test_tool", 1.23, cache_hit=False, extra={"use_llm": True})
     record_tool_perf("test_tool", 0.45, cache_hit=True)
 
-    from cache_manager import get_cache_dir
+    from cheap_agent.cache_manager import get_cache_dir
     log_path = get_cache_dir() / "perf_logs" / "perf.jsonl"
     assert log_path.exists()
     lines = log_path.read_text(encoding="utf-8").strip().split("\n")

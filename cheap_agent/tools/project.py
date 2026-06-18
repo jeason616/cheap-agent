@@ -4,8 +4,8 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
-from cache import get_cache, make_hash, set_cache
-from config import (
+from cheap_agent.cache import get_cache, make_hash, set_cache
+from cheap_agent.config import (
     ENABLE_LLM_FILE_SUMMARY,
     ENABLE_PROJECT_MAP_CACHE,
     MAX_FILE_CHARS,
@@ -16,7 +16,7 @@ from config import (
     PROJECT_MAP_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
-from workspace import (
+from cheap_agent.workspace import (
     get_project_files_cached,
     get_relative_path,
     resolve_safe_path,
@@ -197,7 +197,7 @@ def build_project_map_logic(
                 break
 
         if key_files:
-            from tools_reading import extract_symbols_logic
+            from cheap_agent.tools.reading import extract_symbols_logic
             parts.append(f"Key file symbols ({len(key_files)} files):")
             for f in key_files:
                 symbols = extract_symbols_logic(f)
@@ -263,7 +263,7 @@ def summarize_file_logic(
 
     symbols_section = ""
     if ext == ".py":
-        from tools_reading import extract_symbols_logic
+        from cheap_agent.tools.reading import extract_symbols_logic
         symbols_section = extract_symbols_logic(file_path)
 
     rule_parts = [
@@ -306,8 +306,8 @@ def summarize_file_logic(
         return _truncate(rule_result, MAX_OUTPUT_CHARS)
 
     try:
-        from llm_client import ask_llm
-        from prompts import FILE_SUMMARY_SYSTEM_PROMPT
+        from cheap_agent.llm_client import ask_llm
+        from cheap_agent.prompts.base import FILE_SUMMARY_SYSTEM_PROMPT
         content = "\n".join(lines[:200])
         user_prompt = f"文件路径: {rel}\n\n文件结构:\n{rule_result}\n\n文件内容(前200行):\n```\n{content}\n```"
         llm_result = ask_llm(FILE_SUMMARY_SYSTEM_PROMPT, user_prompt, max_tokens=512)
@@ -438,8 +438,8 @@ def summarize_directory_logic(
 
     if use_llm and ENABLE_LLM_FILE_SUMMARY:
         try:
-            from llm_client import ask_llm
-            from prompts import DIRECTORY_SUMMARY_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import DIRECTORY_SUMMARY_SYSTEM_PROMPT
             user_prompt = f"目录: {rel_dir}\n\n分析结果:\n{result}"
             llm_result = ask_llm(DIRECTORY_SUMMARY_SYSTEM_PROMPT, user_prompt, max_tokens=512)
             result = result + "\n\nLLM Summary:\n" + llm_result
@@ -636,8 +636,8 @@ def detect_project_profile_logic(
 
     if use_llm:
         try:
-            from llm_client import ask_llm
-            from prompts import PROJECT_PROFILE_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import PROJECT_PROFILE_SYSTEM_PROMPT
             llm_result = ask_llm(PROJECT_PROFILE_SYSTEM_PROMPT, f"项目画像:\n{result}", max_tokens=512)
             result = result + "\n\nLLM Notes:\n" + llm_result
         except Exception as e:

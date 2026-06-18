@@ -3,7 +3,7 @@ import sys
 import openai
 from openai import OpenAI
 
-from config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, MAX_OUTPUT_CHARS
+from cheap_agent.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, MAX_OUTPUT_CHARS
 
 _client: OpenAI | None = None
 

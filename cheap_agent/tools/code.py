@@ -1,13 +1,13 @@
-from config import MAX_FILE_CHARS
-from llm_client import ask_llm
-from prompts import (
+from cheap_agent.config import MAX_FILE_CHARS
+from cheap_agent.llm_client import ask_llm
+from cheap_agent.prompts.base import (
     CODE_REVIEW_SYSTEM_PROMPT,
     ERROR_ANALYSIS_SYSTEM_PROMPT,
     RELATED_FILES_SYSTEM_PROMPT,
     TEST_IDEAS_SYSTEM_PROMPT,
     PROJECT_SUMMARY_SYSTEM_PROMPT,
 )
-from workspace import list_project_files, read_text_file
+from cheap_agent.workspace import list_project_files, read_text_file
 
 PROMPT_RESERVE = 2000
 

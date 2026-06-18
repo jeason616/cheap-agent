@@ -319,27 +319,41 @@ default_tools_approval_mode = "prompt"
 
 ```
 cheap-agent/
-├── README.md          # 本文件
-├── requirements.txt   # Python 依赖
-├── .env.example       # 环境变量模板
-├── server.py          # MCP Server 入口
-├── config.py          # 配置加载
-├── llm_client.py      # OpenAI-compatible LLM 调用
-├── workspace.py       # 安全文件读取与路径工具
-├── prompts.py         # 提示词模板
-├── cache.py           # 内存缓存系统
-├── cache_manager.py   # 磁盘缓存管理
-├── tools_code.py      # LLM 分析工具逻辑
-├── tools_reading.py   # 本地读取工具逻辑（不调用 LLM）
-├── tools_project.py   # 项目理解工具逻辑
-├── tools_diagnostics.py # 错误诊断工具逻辑
-├── tools_testing.py   # 测试和验证工具逻辑
-├── tools_review.py    # 代码审查工具逻辑
-├── tools_cache.py     # 缓存和记忆工具逻辑
-├── tools_profile.py   # 项目画像与启动上下文工具逻辑
-├── tools_paper.py     # 论文辅助工具逻辑
-├── latex_parser.py    # LaTeX/Markdown 解析器
-├── bib_parser.py      # BibTeX 解析器
-├── paper_prompts.py   # 论文分析提示词
-└── test_stdio.py      # 冒烟测试
+├── README.md              # 项目文档
+├── requirements.txt       # Python 依赖
+├── .env.example           # 环境变量模板
+├── server.py              # MCP Server 入口
+├── cheap_agent/           # 主包
+│   ├── __init__.py
+│   ├── config.py          # 配置加载
+│   ├── llm_client.py      # OpenAI-compatible LLM 调用
+│   ├── workspace.py       # 安全文件读取与路径工具
+│   ├── cache.py           # 内存缓存系统
+│   ├── cache_manager.py   # 磁盘缓存管理
+│   ├── parsers/           # 文档解析器
+│   │   ├── latex_parser.py
+│   │   └── bib_parser.py
+│   ├── prompts/           # 提示词模板
+│   │   ├── base.py        # 基础编码提示词
+│   │   └── paper.py       # 论文分析提示词
+│   └── tools/             # MCP 工具业务逻辑
+│       ├── code.py        # LLM 分析工具
+│       ├── reading.py     # 本地读取工具
+│       ├── project.py     # 项目理解工具
+│       ├── diagnostics.py # 错误诊断工具
+│       ├── testing.py     # 测试验证工具
+│       ├── review.py      # 代码审查工具
+│       ├── cache_tools.py # 缓存管理工具
+│       ├── profile.py     # 项目画像工具
+│       └── paper.py       # 论文辅助工具
+└── tests/                 # 测试文件
+    ├── test_stdio.py
+    ├── test_reading.py
+    ├── test_project.py
+    ├── test_diagnostics.py
+    ├── test_testing.py
+    ├── test_review.py
+    ├── test_cache.py
+    ├── test_profile.py
+    └── test_paper.py
 ```

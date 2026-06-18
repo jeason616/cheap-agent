@@ -4,7 +4,7 @@ import sys
 
 
 def test_suggest_minimal_repro():
-    from tools_testing import suggest_minimal_repro_logic
+    from cheap_agent.tools.testing import suggest_minimal_repro_logic
 
     result = suggest_minimal_repro_logic("模型 forward 报错", use_llm=False)
     assert "Minimal Reproduction Plan" in result
@@ -27,7 +27,7 @@ def test_suggest_minimal_repro():
 
 
 def test_generate_unit_test_plan():
-    from tools_testing import generate_unit_test_plan_logic
+    from cheap_agent.tools.testing import generate_unit_test_plan_logic
 
     result = generate_unit_test_plan_logic("workspace.py", use_llm=False)
     assert "Unit Test Plan" in result
@@ -56,7 +56,7 @@ def test_generate_unit_test_plan():
 
 
 def test_check_config_consistency():
-    from tools_testing import check_config_consistency_logic
+    from cheap_agent.tools.testing import check_config_consistency_logic
 
     result = check_config_consistency_logic(use_llm=False)
     assert "Config Consistency Check" in result
@@ -73,7 +73,7 @@ def test_check_config_consistency():
 
 
 def test_suggest_validation_plan():
-    from tools_testing import suggest_validation_plan_logic
+    from cheap_agent.tools.testing import suggest_validation_plan_logic
 
     result = suggest_validation_plan_logic("修改了训练脚本", use_llm=False)
     assert "Validation Plan" in result

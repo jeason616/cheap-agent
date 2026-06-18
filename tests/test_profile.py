@@ -4,7 +4,7 @@ import sys
 
 
 def test_build_project_profile_v2():
-    from tools_profile import build_project_profile_v2_logic
+    from cheap_agent.tools.profile import build_project_profile_v2_logic
 
     result = build_project_profile_v2_logic(use_llm=False, force_refresh=True)
     assert "Project Profile v2" in result
@@ -21,7 +21,7 @@ def test_build_project_profile_v2():
 
 
 def test_get_codex_onboarding_pack():
-    from tools_profile import get_codex_onboarding_pack_logic
+    from cheap_agent.tools.profile import get_codex_onboarding_pack_logic
 
     result = get_codex_onboarding_pack_logic()
     assert "Codex Onboarding Pack" in result
@@ -41,7 +41,7 @@ def test_get_codex_onboarding_pack():
 
 
 def test_infer_project_runbook():
-    from tools_profile import infer_project_runbook_logic
+    from cheap_agent.tools.profile import infer_project_runbook_logic
 
     result = infer_project_runbook_logic(use_llm=False)
     assert "Project Runbook" in result
@@ -57,7 +57,7 @@ def test_infer_project_runbook():
 
 
 def test_recommend_workflow_for_task():
-    from tools_profile import recommend_workflow_for_task_logic
+    from cheap_agent.tools.profile import recommend_workflow_for_task_logic
 
     result = recommend_workflow_for_task_logic("traceback error in train.py")
     assert "Recommended Workflow" in result
@@ -84,7 +84,7 @@ def test_recommend_workflow_for_task():
 
 
 def test_explain_project_conventions():
-    from tools_profile import explain_project_conventions_logic
+    from cheap_agent.tools.profile import explain_project_conventions_logic
 
     result = explain_project_conventions_logic(use_llm=False)
     assert "Project Conventions" in result

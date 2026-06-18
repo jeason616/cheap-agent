@@ -1,8 +1,8 @@
 import re
 from pathlib import Path
 
-from config import MAX_TEX_FILE_CHARS, MAX_MARKDOWN_FILE_CHARS, MAX_PAPER_FILES, WORKSPACE_ROOT
-from workspace import resolve_safe_path, get_relative_path, SKIP_DIRS, MAX_FILE_SIZE
+from cheap_agent.config import MAX_TEX_FILE_CHARS, MAX_MARKDOWN_FILE_CHARS, MAX_PAPER_FILES, WORKSPACE_ROOT
+from cheap_agent.workspace import resolve_safe_path, get_relative_path, SKIP_DIRS, MAX_FILE_SIZE
 
 
 _TEX_EXTS = {".tex", ".sty", ".cls", ".bib"}

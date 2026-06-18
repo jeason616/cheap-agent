@@ -18,7 +18,7 @@ SAMPLE_DIFF = """diff --git a/src/train.py b/src/train.py
 
 
 def test_parse_changed_files_from_diff():
-    from tools_review import parse_changed_files_from_diff
+    from cheap_agent.tools.review import parse_changed_files_from_diff
 
     files = parse_changed_files_from_diff(SAMPLE_DIFF)
     assert "src/train.py" in files
@@ -30,7 +30,7 @@ def test_parse_changed_files_from_diff():
 
 
 def test_parse_diff_summary():
-    from tools_review import parse_diff_summary
+    from cheap_agent.tools.review import parse_diff_summary
 
     summary = parse_diff_summary(SAMPLE_DIFF)
     assert len(summary["files"]) >= 1
@@ -45,7 +45,7 @@ def test_parse_diff_summary():
 
 
 def test_extract_symbols_from_diff():
-    from tools_review import extract_symbols_from_diff
+    from cheap_agent.tools.review import extract_symbols_from_diff
 
     symbols = extract_symbols_from_diff(SAMPLE_DIFF)
     assert "train" in symbols
@@ -57,7 +57,7 @@ def test_extract_symbols_from_diff():
 
 
 def test_mask_secrets_in_text():
-    from tools_review import mask_secrets_in_text
+    from cheap_agent.tools.review import mask_secrets_in_text
 
     text = "API_KEY=secret123\nTOKEN=abc"
     masked = mask_secrets_in_text(text)
@@ -67,7 +67,7 @@ def test_mask_secrets_in_text():
 
 
 def test_parse_file_list():
-    from tools_review import parse_file_list
+    from cheap_agent.tools.review import parse_file_list
 
     files = parse_file_list("a.py\nb.py\nc.py")
     assert len(files) == 3
@@ -84,7 +84,7 @@ def test_parse_file_list():
 
 
 def test_review_diff():
-    from tools_review import review_diff_logic
+    from cheap_agent.tools.review import review_diff_logic
 
     result = review_diff_logic(SAMPLE_DIFF, use_llm=False)
     assert "Diff Review" in result
@@ -102,7 +102,7 @@ def test_review_diff():
 
 
 def test_risk_check_before_edit():
-    from tools_review import risk_check_before_edit_logic
+    from cheap_agent.tools.review import risk_check_before_edit_logic
 
     result = risk_check_before_edit_logic("修改训练脚本", target_files="config.py", use_llm=False)
     assert "Pre-edit Risk Check" in result
@@ -119,7 +119,7 @@ def test_risk_check_before_edit():
 
 
 def test_post_edit_review():
-    from tools_review import post_edit_review_logic
+    from cheap_agent.tools.review import post_edit_review_logic
 
     result = post_edit_review_logic("修复 bug", "config.py", use_llm=False)
     assert "Post-edit Review" in result
@@ -140,7 +140,7 @@ def test_post_edit_review():
 
 
 def test_analyze_change_impact():
-    from tools_review import analyze_change_impact_logic
+    from cheap_agent.tools.review import analyze_change_impact_logic
 
     result = analyze_change_impact_logic("修改了函数", target_files="config.py", use_llm=False)
     assert "Change Impact Analysis" in result

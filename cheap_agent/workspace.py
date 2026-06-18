@@ -2,7 +2,7 @@ import fnmatch
 import time
 from pathlib import Path
 
-from config import MAX_FILE_CHARS, MAX_SCAN_FILE_SIZE_BYTES, WORKSPACE_ROOT
+from cheap_agent.config import MAX_FILE_CHARS, MAX_SCAN_FILE_SIZE_BYTES, WORKSPACE_ROOT
 
 SKIP_DIRS = {
     ".git", ".venv", "venv", "__pycache__", "node_modules",
@@ -141,7 +141,7 @@ def get_project_files_cached(
 
 def build_file_index(max_files: int | None = None) -> list[dict]:
     """Build a detailed file index with metadata."""
-    from config import MAX_FILE_CHARS as _max
+    from cheap_agent.config import MAX_FILE_CHARS as _max
     limit = max_files or 500
     root = WORKSPACE_ROOT.resolve()
     results: list[dict] = []
@@ -183,8 +183,8 @@ def build_file_index(max_files: int | None = None) -> list[dict]:
 
 def get_file_index_cached(force_rebuild: bool = False) -> list[dict]:
     """Get file index with disk cache support."""
-    from cache_manager import get_disk_cache, set_disk_cache, ensure_cache_dir, write_json_cache_atomic
-    from config import FILE_INDEX_CACHE_TTL_SEC, ENABLE_FILE_INDEX_CACHE
+    from cheap_agent.cache_manager import get_disk_cache, set_disk_cache, ensure_cache_dir, write_json_cache_atomic
+    from cheap_agent.config import FILE_INDEX_CACHE_TTL_SEC, ENABLE_FILE_INDEX_CACHE
 
     if not force_rebuild and ENABLE_FILE_INDEX_CACHE:
         cached = get_disk_cache("file_index", "file_index", ttl_sec=FILE_INDEX_CACHE_TTL_SEC)

@@ -2,8 +2,8 @@ import re
 import sys
 from pathlib import Path
 
-from cache import get_cache, make_hash, set_cache
-from config import (
+from cheap_agent.cache import get_cache, make_hash, set_cache
+from cheap_agent.config import (
     ENABLE_LLM_TESTING,
     ENABLE_TESTING_CACHE,
     MASK_SECRET_VALUES,
@@ -15,7 +15,7 @@ from config import (
     TESTING_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
-from workspace import get_project_files_cached, get_relative_path, resolve_safe_path
+from cheap_agent.workspace import get_project_files_cached, get_relative_path, resolve_safe_path
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -68,8 +68,8 @@ def suggest_minimal_repro_logic(
         try:
             target = resolve_safe_path(related_file)
             if target.is_file():
-                from tools_reading import extract_symbols_logic
-                from tools_project import summarize_file_logic
+                from cheap_agent.tools.reading import extract_symbols_logic
+                from cheap_agent.tools.project import summarize_file_logic
                 symbols = extract_symbols_logic(related_file)
                 summary = summarize_file_logic(related_file, use_llm=False)
                 file_info = f"Related file: {related_file}\n\n{summary}\n\n{symbols}"
@@ -81,7 +81,7 @@ def suggest_minimal_repro_logic(
     error_analysis = ""
     if error_log:
         try:
-            from tools_diagnostics import parse_python_traceback
+            from cheap_agent.tools.diagnostics import parse_python_traceback
             parsed = parse_python_traceback(error_log)
             if parsed["has_traceback"]:
                 frames = parsed["classified"]["project_frames"]
@@ -140,8 +140,8 @@ def suggest_minimal_repro_logic(
 
     if use_llm and ENABLE_LLM_TESTING:
         try:
-            from llm_client import ask_llm
-            from prompts import MINIMAL_REPRO_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import MINIMAL_REPRO_SYSTEM_PROMPT
             llm_input = f"Repro analysis:\n{result}"
             if error_log:
                 llm_input += f"\n\nError log:\n{error_log[:1500]}"
@@ -287,7 +287,7 @@ def generate_unit_test_plan_logic(
         if cached:
             return cached
 
-    from tools_reading import extract_symbols_logic
+    from cheap_agent.tools.reading import extract_symbols_logic
     symbols = extract_symbols_logic(file_path)
 
     symbol_info = ""
@@ -352,8 +352,8 @@ def generate_unit_test_plan_logic(
 
     if use_llm and ENABLE_LLM_TESTING:
         try:
-            from llm_client import ask_llm
-            from prompts import UNIT_TEST_PLAN_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import UNIT_TEST_PLAN_SYSTEM_PROMPT
             llm_input = f"Test plan:\n{result}\n\nFile symbols:\n{symbols[:2000]}"
             if test_goal:
                 llm_input += f"\n\nTest goal: {test_goal}"
@@ -489,8 +489,8 @@ def check_config_consistency_logic(
 
     if use_llm and ENABLE_LLM_TESTING:
         try:
-            from llm_client import ask_llm
-            from prompts import CONFIG_CONSISTENCY_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import CONFIG_CONSISTENCY_SYSTEM_PROMPT
             llm_input = f"Config consistency check:\n{result}"
             if code_hint:
                 llm_input += f"\n\nCode hint: {code_hint}"
@@ -590,7 +590,7 @@ def suggest_validation_plan_logic(
         try:
             target = resolve_safe_path(f)
             if target.is_file():
-                from tools_reading import extract_symbols_logic
+                from cheap_agent.tools.reading import extract_symbols_logic
                 symbols = extract_symbols_logic(f)
                 file_infos.append({"path": f, "exists": True, "symbols": symbols[:500]})
             else:
@@ -648,8 +648,8 @@ def suggest_validation_plan_logic(
 
     if use_llm and ENABLE_LLM_TESTING:
         try:
-            from llm_client import ask_llm
-            from prompts import VALIDATION_PLAN_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import VALIDATION_PLAN_SYSTEM_PROMPT
             llm_input = f"Validation plan:\n{result}"
             if error_log:
                 llm_input += f"\n\nError log:\n{error_log[:1000]}"

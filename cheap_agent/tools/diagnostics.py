@@ -2,8 +2,8 @@ import re
 import sys
 from pathlib import Path
 
-from cache import get_cache, make_hash, set_cache
-from config import (
+from cheap_agent.cache import get_cache, make_hash, set_cache
+from cheap_agent.config import (
     DIAGNOSTIC_CACHE_TTL_SEC,
     ENABLE_DIAGNOSTIC_CACHE,
     ENABLE_LLM_DIAGNOSTICS,
@@ -13,7 +13,7 @@ from config import (
     MAX_TRACEBACK_FRAMES,
     WORKSPACE_ROOT,
 )
-from workspace import get_relative_path, resolve_safe_path
+from cheap_agent.workspace import get_relative_path, resolve_safe_path
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -172,7 +172,7 @@ def analyze_traceback_with_context_logic(
         if read_count >= MAX_TRACEBACK_CONTEXT_FILES:
             break
         try:
-            from tools_reading import read_file_around_line_logic
+            from cheap_agent.tools.reading import read_file_around_line_logic
             ctx = read_file_around_line_logic(f["file"], f["line"], context_lines)
             if not ctx.startswith("[Error]"):
                 code_contexts.append(ctx)
@@ -197,8 +197,8 @@ def analyze_traceback_with_context_logic(
 
     if use_llm and ENABLE_LLM_DIAGNOSTICS:
         try:
-            from llm_client import ask_llm
-            from prompts import TRACEBACK_ANALYSIS_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import TRACEBACK_ANALYSIS_SYSTEM_PROMPT
             llm_input = f"Traceback analysis:\n{result}\n\nOriginal error log:\n{error_log[:2000]}"
             llm_result = ask_llm(TRACEBACK_ANALYSIS_SYSTEM_PROMPT, llm_input, max_tokens=1024)
             result = result + "\n\nLLM Diagnosis:\n" + llm_result
@@ -372,8 +372,8 @@ def diagnose_import_error_logic(
 
     if use_llm and ENABLE_LLM_DIAGNOSTICS:
         try:
-            from llm_client import ask_llm
-            from prompts import IMPORT_ERROR_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import IMPORT_ERROR_SYSTEM_PROMPT
             llm_input = f"Import error analysis:\n{result}\n\nOriginal error log:\n{error_log[:2000]}"
             llm_result = ask_llm(IMPORT_ERROR_SYSTEM_PROMPT, llm_input, max_tokens=512)
             result = result + "\n\nLLM Diagnosis:\n" + llm_result
@@ -563,8 +563,8 @@ def diagnose_training_error_logic(
 
     if use_llm and ENABLE_LLM_DIAGNOSTICS:
         try:
-            from llm_client import ask_llm
-            from prompts import TRAINING_ERROR_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import TRAINING_ERROR_SYSTEM_PROMPT
             llm_input = f"Training error analysis:\n{result}\n\nOriginal error log:\n{error_log[:2000]}"
             if project_hint:
                 llm_input += f"\n\nProject context: {project_hint[:500]}"
@@ -657,8 +657,8 @@ def suggest_debug_steps_logic(
 
     if use_llm and ENABLE_LLM_DIAGNOSTICS:
         try:
-            from llm_client import ask_llm
-            from prompts import DEBUG_STEPS_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import DEBUG_STEPS_SYSTEM_PROMPT
             llm_input = f"Debug plan:\n{result}"
             if error_log:
                 llm_input += f"\n\nError log:\n{error_log[:1500]}"

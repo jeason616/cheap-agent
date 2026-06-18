@@ -4,9 +4,9 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
-from cache import make_hash
-from cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
-from config import (
+from cheap_agent.cache import make_hash
+from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
+from cheap_agent.config import (
     CACHE_SCHEMA_VERSION,
     CACHE_VERSION,
     ENABLE_CONVENTIONS_CACHE,
@@ -28,7 +28,7 @@ from config import (
     RUNBOOK_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
-from workspace import get_file_index_cached, get_file_index_version, get_relative_path
+from cheap_agent.workspace import get_file_index_cached, get_file_index_version, get_relative_path
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -156,8 +156,8 @@ def build_project_profile_v2_logic(
 
     if use_llm and ENABLE_LLM_PROFILE:
         try:
-            from llm_client import ask_llm
-            from prompts import PROJECT_PROFILE_V2_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import PROJECT_PROFILE_V2_SYSTEM_PROMPT
             llm_input = f"Project profile:\n{result}\n\nFile categories: {dict(categories)}"
             llm_result = ask_llm(PROJECT_PROFILE_V2_SYSTEM_PROMPT, llm_input, max_tokens=1024)
             result = result + "\n\nLLM Notes:\n" + llm_result
@@ -575,8 +575,8 @@ def infer_project_runbook_logic(
 
     if use_llm and ENABLE_LLM_RUNBOOK:
         try:
-            from llm_client import ask_llm
-            from prompts import PROJECT_RUNBOOK_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import PROJECT_RUNBOOK_SYSTEM_PROMPT
             llm_result = ask_llm(PROJECT_RUNBOOK_SYSTEM_PROMPT, f"Runbook:\n{result}", max_tokens=512)
             result = result + "\n\nLLM Notes:\n" + llm_result
         except Exception as e:
@@ -684,7 +684,7 @@ def recommend_workflow_for_task_logic(
 
     if use_llm:
         try:
-            from llm_client import ask_llm
+            from cheap_agent.llm_client import ask_llm
             llm_result = ask_llm("Review and refine this workflow recommendation. Keep it concise.", f"Workflow:\n{result}", max_tokens=256)
             result = result + "\n\nLLM Refinement:\n" + llm_result
         except Exception as e:
@@ -814,8 +814,8 @@ def explain_project_conventions_logic(
 
     if use_llm and ENABLE_LLM_CONVENTIONS:
         try:
-            from llm_client import ask_llm
-            from prompts import PROJECT_CONVENTIONS_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import PROJECT_CONVENTIONS_SYSTEM_PROMPT
             llm_result = ask_llm(PROJECT_CONVENTIONS_SYSTEM_PROMPT, f"Conventions:\n{result}", max_tokens=512)
             result = result + "\n\nLLM Notes:\n" + llm_result
         except Exception as e:

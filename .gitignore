@@ -11,3 +11,4 @@ build/
 .mcp.json
 AGENTS.md
 .code_agent_cache/
+.pytest_cache/

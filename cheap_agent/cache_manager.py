@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from config import (
+from cheap_agent.config import (
     CACHE_DIR,
     CACHE_MASK_SECRETS,
     CACHE_SCHEMA_VERSION,

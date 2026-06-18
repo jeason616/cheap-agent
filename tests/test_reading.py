@@ -4,7 +4,7 @@ import sys
 
 
 def test_read_file_around_line():
-    from tools_reading import read_file_around_line_logic
+    from cheap_agent.tools.reading import read_file_around_line_logic
 
     result = read_file_around_line_logic("config.py", 1, context_lines=10)
     assert "File:" in result
@@ -33,7 +33,7 @@ def test_read_file_around_line():
 
 
 def test_extract_symbols():
-    from tools_reading import extract_symbols_logic
+    from cheap_agent.tools.reading import extract_symbols_logic
 
     result = extract_symbols_logic("workspace.py")
     assert "Imports:" in result
@@ -58,7 +58,7 @@ def test_extract_symbols():
 
 
 def test_search_code():
-    from tools_reading import search_code_logic
+    from cheap_agent.tools.reading import search_code_logic
 
     result = search_code_logic("resolve_safe_path")
     assert "Results:" in result

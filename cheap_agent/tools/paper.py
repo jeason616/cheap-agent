@@ -4,9 +4,9 @@ import time
 from collections import Counter
 from pathlib import Path
 
-from cache import make_hash
-from cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
-from config import (
+from cheap_agent.cache import make_hash
+from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
+from cheap_agent.config import (
     CACHE_SCHEMA_VERSION,
     ENABLE_LLM_PAPER_REVIEW,
     ENABLE_PAPER_CACHE,
@@ -22,9 +22,9 @@ from config import (
     PAPER_LLM_TEMPERATURE,
     WORKSPACE_ROOT,
 )
-from workspace import get_relative_path
+from cheap_agent.workspace import get_relative_path
 
-from latex_parser import (
+from cheap_agent.parsers.latex_parser import (
     detect_main_tex_file,
     find_markdown_files,
     find_tex_files,
@@ -42,7 +42,7 @@ from latex_parser import (
     resolve_latex_project_files,
     strip_latex_comments,
 )
-from bib_parser import (
+from cheap_agent.parsers.bib_parser import (
     find_bib_files,
     parse_bib_entries,
     parse_bib_keys_from_text,
@@ -381,8 +381,8 @@ def summarize_latex_structure_logic(
 
     if use_llm and ENABLE_LLM_PAPER_REVIEW:
         try:
-            from llm_client import ask_llm
-            from paper_prompts import LATEX_STRUCTURE_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.paper import LATEX_STRUCTURE_SYSTEM_PROMPT
             llm_input = f"LaTeX structure:\n{map_result[:3000]}"
             llm_result = ask_llm(LATEX_STRUCTURE_SYSTEM_PROMPT, llm_input, max_tokens=PAPER_LLM_MAX_TOKENS, temperature=PAPER_LLM_TEMPERATURE)
             result = result + "\n\nLLM Analysis:\n" + llm_result
@@ -579,8 +579,8 @@ def review_paper_structure_logic(
 
     if use_llm and ENABLE_LLM_PAPER_REVIEW:
         try:
-            from llm_client import ask_llm
-            from paper_prompts import PAPER_STRUCTURE_REVIEW_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.paper import PAPER_STRUCTURE_REVIEW_SYSTEM_PROMPT
             llm_input = f"Structure review:\n{result}"
             llm_result = ask_llm(PAPER_STRUCTURE_REVIEW_SYSTEM_PROMPT, llm_input, max_tokens=PAPER_LLM_MAX_TOKENS, temperature=PAPER_LLM_TEMPERATURE)
             result = result + "\n\nLLM Analysis:\n" + llm_result
@@ -706,8 +706,8 @@ def check_claim_evidence_logic(
 
     if use_llm and ENABLE_LLM_PAPER_REVIEW:
         try:
-            from llm_client import ask_llm
-            from paper_prompts import CLAIM_EVIDENCE_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.paper import CLAIM_EVIDENCE_SYSTEM_PROMPT
             llm_input = f"Claim-evidence check:\n{result[:3000]}"
             llm_result = ask_llm(CLAIM_EVIDENCE_SYSTEM_PROMPT, llm_input, max_tokens=PAPER_LLM_MAX_TOKENS, temperature=PAPER_LLM_TEMPERATURE)
             result = result + "\n\nLLM Analysis:\n" + llm_result

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def test_latex_parser_sections():
-    from latex_parser import parse_latex_sections
+    from cheap_agent.parsers.latex_parser import parse_latex_sections
 
     tex = r"""
 \section{Introduction}
@@ -28,7 +28,7 @@ Our approach.
 
 
 def test_latex_parser_inputs():
-    from latex_parser import parse_latex_inputs
+    from cheap_agent.parsers.latex_parser import parse_latex_inputs
 
     tex = r"""
 \input{sections/introduction}
@@ -43,7 +43,7 @@ def test_latex_parser_inputs():
 
 
 def test_latex_parser_citations():
-    from latex_parser import parse_latex_citations
+    from cheap_agent.parsers.latex_parser import parse_latex_citations
 
     tex = r"""
 As shown in \cite{dino2022}, the method works.
@@ -60,7 +60,7 @@ As shown in \cite{dino2022}, the method works.
 
 
 def test_latex_parser_labels():
-    from latex_parser import parse_latex_labels
+    from cheap_agent.parsers.latex_parser import parse_latex_labels
 
     tex = r"""
 \section{Introduction}\label{sec:intro}
@@ -74,7 +74,7 @@ def test_latex_parser_labels():
 
 
 def test_latex_parser_figures():
-    from latex_parser import parse_latex_figures
+    from cheap_agent.parsers.latex_parser import parse_latex_figures
 
     tex = r"""
 \begin{figure}
@@ -91,7 +91,7 @@ def test_latex_parser_figures():
 
 
 def test_latex_parser_tables():
-    from latex_parser import parse_latex_tables
+    from cheap_agent.parsers.latex_parser import parse_latex_tables
 
     tex = r"""
 \begin{table}
@@ -112,7 +112,7 @@ Ours & 45.2
 
 
 def test_latex_parser_refs():
-    from latex_parser import parse_latex_refs
+    from cheap_agent.parsers.latex_parser import parse_latex_refs
 
     tex = r"""
 As shown in Figure~\ref{fig:framework} and Table~\ref{tab:main}.
@@ -127,7 +127,7 @@ See Section~\autoref{sec:intro} for details.
 
 
 def test_latex_parser_title_abstract():
-    from latex_parser import parse_latex_title, parse_latex_abstract
+    from cheap_agent.parsers.latex_parser import parse_latex_title, parse_latex_abstract
 
     tex = r"""
 \documentclass{IEEEtran}
@@ -146,7 +146,7 @@ We propose a novel method that achieves state-of-the-art performance.
 
 
 def test_latex_parser_documentclass():
-    from latex_parser import parse_latex_documentclass
+    from cheap_agent.parsers.latex_parser import parse_latex_documentclass
 
     tex = r"\documentclass[conference]{IEEEtran}"
     cls = parse_latex_documentclass(tex)
@@ -155,7 +155,7 @@ def test_latex_parser_documentclass():
 
 
 def test_latex_parser_strip_comments():
-    from latex_parser import strip_latex_comments
+    from cheap_agent.parsers.latex_parser import strip_latex_comments
 
     tex = "% This is a comment\nReal text % inline comment\n% Another comment"
     result = strip_latex_comments(tex)
@@ -165,7 +165,7 @@ def test_latex_parser_strip_comments():
 
 
 def test_bib_parser_entries():
-    from bib_parser import parse_bib_entries
+    from cheap_agent.parsers.bib_parser import parse_bib_entries
 
     bib = """
 @article{dino2022,
@@ -193,7 +193,7 @@ def test_bib_parser_entries():
 
 
 def test_bib_parser_duplicate_keys():
-    from bib_parser import parse_bib_entries
+    from cheap_agent.parsers.bib_parser import parse_bib_entries
 
     bib = """
 @article{dup2022,
@@ -212,7 +212,7 @@ def test_bib_parser_duplicate_keys():
 
 
 def test_bib_parser_keys_from_text():
-    from bib_parser import parse_bib_keys_from_text
+    from cheap_agent.parsers.bib_parser import parse_bib_keys_from_text
 
     bib = """
 @article{key1, title={T1}, year={2022}}
@@ -225,7 +225,7 @@ def test_bib_parser_keys_from_text():
 
 
 def test_bib_parser_summarize():
-    from bib_parser import parse_bib_entries, summarize_bib_entries
+    from cheap_agent.parsers.bib_parser import parse_bib_entries, summarize_bib_entries
 
     bib = "@article{test2022, title={Test}, year={2022}}"
     entries = parse_bib_entries(bib)
@@ -236,7 +236,7 @@ def test_bib_parser_summarize():
 
 
 def test_detect_paper_project():
-    from tools_paper import detect_paper_project_logic
+    from cheap_agent.tools.paper import detect_paper_project_logic
 
     result = detect_paper_project_logic(use_llm=False)
     assert "Paper Project Detection" in result
@@ -246,7 +246,7 @@ def test_detect_paper_project():
 
 
 def test_find_paper_sections():
-    from tools_paper import find_paper_sections_logic
+    from cheap_agent.tools.paper import find_paper_sections_logic
 
     result = find_paper_sections_logic(query="")
     assert "Paper Sections" in result or "Error" in result
@@ -254,7 +254,7 @@ def test_find_paper_sections():
 
 
 def test_parse_bib_file():
-    from tools_paper import parse_bib_file_logic
+    from cheap_agent.tools.paper import parse_bib_file_logic
 
     result = parse_bib_file_logic(bib_file="")
     assert "BibTeX Summary" in result or "Error" in result
@@ -262,7 +262,7 @@ def test_parse_bib_file():
 
 
 def test_check_citation_coverage():
-    from tools_paper import check_citation_coverage_logic
+    from cheap_agent.tools.paper import check_citation_coverage_logic
 
     result = check_citation_coverage_logic(main_file="", bib_file="")
     assert "Citation Coverage" in result or "Error" in result

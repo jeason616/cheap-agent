@@ -32,7 +32,7 @@ RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x512 and 1024x10)
 
 
 def test_parse_python_traceback():
-    from tools_diagnostics import parse_python_traceback
+    from cheap_agent.tools.diagnostics import parse_python_traceback
 
     parsed = parse_python_traceback(SAMPLE_TRACEBACK)
     assert parsed["error_type"] == "RuntimeError"
@@ -47,7 +47,7 @@ def test_parse_python_traceback():
 
 
 def test_extract_traceback_frames():
-    from tools_diagnostics import extract_traceback_frames
+    from cheap_agent.tools.diagnostics import extract_traceback_frames
 
     frames = extract_traceback_frames(SAMPLE_TRACEBACK)
     assert len(frames) >= 2
@@ -62,7 +62,7 @@ def test_extract_traceback_frames():
 
 
 def test_analyze_traceback_with_context():
-    from tools_diagnostics import analyze_traceback_with_context_logic
+    from cheap_agent.tools.diagnostics import analyze_traceback_with_context_logic
 
     result = analyze_traceback_with_context_logic(SAMPLE_TRACEBACK, use_llm=False)
     assert "Traceback Summary" in result
@@ -76,7 +76,7 @@ def test_analyze_traceback_with_context():
 
 
 def test_diagnose_import_error():
-    from tools_diagnostics import diagnose_import_error_logic
+    from cheap_agent.tools.diagnostics import diagnose_import_error_logic
 
     result = diagnose_import_error_logic(SAMPLE_IMPORT_ERROR, use_llm=False)
     assert "Import Error Diagnosis" in result
@@ -91,7 +91,7 @@ def test_diagnose_import_error():
 
 
 def test_diagnose_training_error():
-    from tools_diagnostics import diagnose_training_error_logic
+    from cheap_agent.tools.diagnostics import diagnose_training_error_logic
 
     result = diagnose_training_error_logic(SAMPLE_CUDA_OOM, use_llm=False)
     assert "Training Error Diagnosis" in result
@@ -109,7 +109,7 @@ def test_diagnose_training_error():
 
 
 def test_suggest_debug_steps():
-    from tools_diagnostics import suggest_debug_steps_logic
+    from cheap_agent.tools.diagnostics import suggest_debug_steps_logic
 
     result = suggest_debug_steps_logic("训练时 loss 为 NaN", use_llm=False)
     assert "Debug Plan" in result

@@ -2,8 +2,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from config import MAX_BIB_ENTRIES, WORKSPACE_ROOT
-from workspace import resolve_safe_path, SKIP_DIRS, MAX_FILE_SIZE
+from cheap_agent.config import MAX_BIB_ENTRIES, WORKSPACE_ROOT
+from cheap_agent.workspace import resolve_safe_path, SKIP_DIRS, MAX_FILE_SIZE
 
 
 def find_bib_files(max_files: int | None = None) -> list[str]:

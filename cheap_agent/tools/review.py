@@ -2,8 +2,8 @@ import re
 import sys
 from pathlib import Path
 
-from cache import get_cache, make_hash, set_cache
-from config import (
+from cheap_agent.cache import get_cache, make_hash, set_cache
+from cheap_agent.config import (
     ENABLE_LLM_REVIEW,
     ENABLE_REVIEW_CACHE,
     MASK_SECRET_VALUES,
@@ -16,7 +16,7 @@ from config import (
     REVIEW_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
-from workspace import get_project_files_cached, get_relative_path, resolve_safe_path
+from cheap_agent.workspace import get_project_files_cached, get_relative_path, resolve_safe_path
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -243,8 +243,8 @@ def review_diff_logic(
 
     if use_llm and ENABLE_LLM_REVIEW:
         try:
-            from llm_client import ask_llm
-            from prompts import DIFF_REVIEW_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import DIFF_REVIEW_SYSTEM_PROMPT
             diff_excerpt = diff_text[:5000]
             llm_input = f"Diff review:\n{result}\n\nDiff excerpt:\n{diff_excerpt}"
             if task_description:
@@ -284,7 +284,7 @@ def risk_check_before_edit_logic(
         try:
             target = resolve_safe_path(f)
             if target.is_file():
-                from tools_reading import extract_symbols_logic
+                from cheap_agent.tools.reading import extract_symbols_logic
                 symbols = extract_symbols_logic(f)
                 file_infos.append({"path": f, "exists": True, "symbols": symbols[:500]})
             else:
@@ -342,8 +342,8 @@ def risk_check_before_edit_logic(
 
     if use_llm and ENABLE_LLM_REVIEW:
         try:
-            from llm_client import ask_llm
-            from prompts import PRE_EDIT_RISK_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import PRE_EDIT_RISK_SYSTEM_PROMPT
             llm_input = f"Pre-edit risk check:\n{result}"
             llm_result = ask_llm(PRE_EDIT_RISK_SYSTEM_PROMPT, llm_input, max_tokens=512)
             result = result + "\n\nLLM Analysis:\n" + llm_result
@@ -457,7 +457,7 @@ def post_edit_review_logic(
         try:
             target = resolve_safe_path(f)
             if target.is_file():
-                from tools_reading import extract_symbols_logic
+                from cheap_agent.tools.reading import extract_symbols_logic
                 symbols = extract_symbols_logic(f)
                 file_infos.append({"path": f, "exists": True, "symbols": symbols[:300]})
             else:
@@ -522,8 +522,8 @@ def post_edit_review_logic(
 
     if use_llm and ENABLE_LLM_REVIEW:
         try:
-            from llm_client import ask_llm
-            from prompts import POST_EDIT_REVIEW_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import POST_EDIT_REVIEW_SYSTEM_PROMPT
             llm_input = f"Post-edit review:\n{result}"
             if diff_text:
                 llm_input += f"\n\nDiff excerpt:\n{diff_text[:3000]}"
@@ -590,7 +590,7 @@ def analyze_change_impact_logic(
     if symbols:
         for sym in symbols[:MAX_IMPACT_SYMBOLS]:
             try:
-                from tools_reading import search_code_logic
+                from cheap_agent.tools.reading import search_code_logic
                 result = search_code_logic(sym, max_results=5)
                 if result and "no matches" not in result.lower():
                     refs = []
@@ -657,8 +657,8 @@ def analyze_change_impact_logic(
 
     if use_llm and ENABLE_LLM_REVIEW:
         try:
-            from llm_client import ask_llm
-            from prompts import CHANGE_IMPACT_SYSTEM_PROMPT
+            from cheap_agent.llm_client import ask_llm
+            from cheap_agent.prompts.base import CHANGE_IMPACT_SYSTEM_PROMPT
             llm_input = f"Change impact analysis:\n{result}"
             if diff_text:
                 llm_input += f"\n\nDiff excerpt:\n{diff_text[:3000]}"

@@ -4,8 +4,8 @@ import re
 import sys
 from pathlib import Path
 
-from config import MAX_CONTEXT_LINES, MAX_OUTPUT_CHARS, MAX_SEARCH_RESULTS, WORKSPACE_ROOT
-from workspace import get_project_files_cached, get_relative_path, is_allowed_text_file, is_skipped_dir, resolve_safe_path, MAX_FILE_SIZE
+from cheap_agent.config import MAX_CONTEXT_LINES, MAX_OUTPUT_CHARS, MAX_SEARCH_RESULTS, WORKSPACE_ROOT
+from cheap_agent.workspace import get_project_files_cached, get_relative_path, is_allowed_text_file, is_skipped_dir, resolve_safe_path, MAX_FILE_SIZE
 
 
 def _truncate(text: str, limit: int) -> str:
