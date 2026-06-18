@@ -86,6 +86,19 @@
 | `recommend_workflow_for_task` | 根据任务描述推荐 MCP 工具调用顺序 | 否 |
 | `explain_project_conventions` | 总结项目开发约定 | 是（可选） |
 
+### 论文辅助工具（论文写作辅助）
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `detect_paper_project` | 判断当前项目是否为 LaTeX/Markdown 论文项目 | 否 |
+| `build_paper_map` | 生成论文项目地图（章节、bib、图表、labels、citations） | 否 |
+| `summarize_latex_structure` | 总结 LaTeX 论文结构，指出章节安排和潜在问题 | 是（可选） |
+| `find_paper_sections` | 查找 Introduction、Method、Experiments 等章节位置 | 否 |
+| `review_paper_structure` | 检查论文整体结构是否完整（适合 IEEE 风格） | 是（可选） |
+| `check_claim_evidence` | 检查强 claim 是否有表格、图、引用等 evidence 支撑 | 是（可选） |
+| `parse_bib_file` | 解析 BibTeX 文件，输出引用库摘要 | 否 |
+| `check_citation_coverage` | 检查正文 citation keys 与 refs.bib 是否一致 | 否 |
+
 ## 安装
 
 ### Linux / macOS
@@ -283,6 +296,17 @@ default_tools_approval_mode = "prompt"
 - `recommend_workflow_for_task(task_description="修复训练报错")` — 推荐工具调用顺序
 - `explain_project_conventions()` — 总结项目开发约定
 
+### 论文辅助工具
+
+- `detect_paper_project()` — 判断当前项目是否是论文项目
+- `build_paper_map()` — 生成论文项目地图
+- `summarize_latex_structure()` — 总结论文结构
+- `find_paper_sections(query="method")` — 查找 Method 章节位置
+- `review_paper_structure()` — 检查论文结构是否完整
+- `check_claim_evidence()` — 检查强 claim 是否有 evidence 支撑
+- `parse_bib_file()` — 解析 refs.bib
+- `check_citation_coverage()` — 检查正文引用和 bib 是否一致
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -313,5 +337,9 @@ cheap-agent/
 ├── tools_review.py    # 代码审查工具逻辑
 ├── tools_cache.py     # 缓存和记忆工具逻辑
 ├── tools_profile.py   # 项目画像与启动上下文工具逻辑
+├── tools_paper.py     # 论文辅助工具逻辑
+├── latex_parser.py    # LaTeX/Markdown 解析器
+├── bib_parser.py      # BibTeX 解析器
+├── paper_prompts.py   # 论文分析提示词
 └── test_stdio.py      # 冒烟测试
 ```

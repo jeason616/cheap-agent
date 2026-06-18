@@ -103,6 +103,24 @@ ENABLE_LLM_PROFILE: bool = os.getenv("ENABLE_LLM_PROFILE", "true").lower() == "t
 ENABLE_LLM_RUNBOOK: bool = os.getenv("ENABLE_LLM_RUNBOOK", "true").lower() == "true"
 ENABLE_LLM_CONVENTIONS: bool = os.getenv("ENABLE_LLM_CONVENTIONS", "true").lower() == "true"
 
+ENABLE_PAPER_TOOLS: bool = os.getenv("ENABLE_PAPER_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_CACHE: bool = os.getenv("ENABLE_PAPER_CACHE", "true").lower() == "true"
+PAPER_CACHE_TTL_SEC: int = _env_int("PAPER_CACHE_TTL_SEC", 3600)
+
+MAX_PAPER_FILES: int = _env_int("MAX_PAPER_FILES", 500)
+MAX_TEX_FILE_CHARS: int = _env_int("MAX_TEX_FILE_CHARS", 50000)
+MAX_MARKDOWN_FILE_CHARS: int = _env_int("MAX_MARKDOWN_FILE_CHARS", 50000)
+MAX_BIB_ENTRIES: int = _env_int("MAX_BIB_ENTRIES", 2000)
+MAX_CLAIMS_TO_CHECK: int = _env_int("MAX_CLAIMS_TO_CHECK", 50)
+MAX_EVIDENCE_ITEMS: int = _env_int("MAX_EVIDENCE_ITEMS", 100)
+MAX_CITATION_ITEMS: int = _env_int("MAX_CITATION_ITEMS", 2000)
+
+ENABLE_LLM_PAPER_REVIEW: bool = os.getenv("ENABLE_LLM_PAPER_REVIEW", "true").lower() == "true"
+PAPER_LLM_MAX_TOKENS: int = _env_int("PAPER_LLM_MAX_TOKENS", 1200)
+PAPER_LLM_TEMPERATURE: float = float(os.getenv("PAPER_LLM_TEMPERATURE", "0.1"))
+
+PAPER_CACHE_DIR: str = os.getenv("PAPER_CACHE_DIR", ".code_agent_cache/paper")
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)

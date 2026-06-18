@@ -53,6 +53,16 @@ from tools_profile import (
     infer_project_runbook_logic,
     recommend_workflow_for_task_logic,
 )
+from tools_paper import (
+    build_paper_map_logic,
+    check_citation_coverage_logic,
+    check_claim_evidence_logic,
+    detect_paper_project_logic,
+    find_paper_sections_logic,
+    parse_bib_file_logic,
+    review_paper_structure_logic,
+    summarize_latex_structure_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -379,6 +389,79 @@ def explain_project_conventions(
 ) -> str:
     """总结项目开发约定，帮助 Codex 避免破坏已有结构和安全边界。"""
     return _safe_call(explain_project_conventions_logic, use_llm)
+
+
+@mcp.tool()
+def detect_paper_project(use_llm: bool = False) -> str:
+    """判断当前项目是否为 LaTeX/Markdown 论文项目。"""
+    return _safe_call(detect_paper_project_logic, use_llm)
+
+
+@mcp.tool()
+def build_paper_map(
+    main_file: str = "",
+    include_bib: bool = True,
+    include_figures: bool = True,
+    use_llm: bool = False,
+) -> str:
+    """生成论文项目地图，包括主 tex、章节、bib、图表、labels、citations。"""
+    return _safe_call(build_paper_map_logic, main_file, include_bib, include_figures, use_llm)
+
+
+@mcp.tool()
+def summarize_latex_structure(
+    main_file: str = "",
+    use_llm: bool = True,
+) -> str:
+    """总结 LaTeX 论文结构，指出章节安排和潜在结构问题。"""
+    return _safe_call(summarize_latex_structure_logic, main_file, use_llm)
+
+
+@mcp.tool()
+def find_paper_sections(
+    query: str = "",
+    main_file: str = "",
+) -> str:
+    """查找 Introduction、Method、Experiments、Ablation 等章节位置。"""
+    return _safe_call(find_paper_sections_logic, query, main_file)
+
+
+@mcp.tool()
+def review_paper_structure(
+    main_file: str = "",
+    paper_type: str = "ieee",
+    use_llm: bool = True,
+) -> str:
+    """检查论文整体结构是否完整，尤其适合 IEEE 风格论文。"""
+    return _safe_call(review_paper_structure_logic, main_file, paper_type, use_llm)
+
+
+@mcp.tool()
+def check_claim_evidence(
+    main_file: str = "",
+    section_query: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查论文中的强 claim 是否有表格、图、引用、实验描述等内部 evidence 支撑。"""
+    return _safe_call(check_claim_evidence_logic, main_file, section_query, use_llm)
+
+
+@mcp.tool()
+def parse_bib_file(
+    bib_file: str = "",
+    max_entries: int = 200,
+) -> str:
+    """解析 BibTeX 文件，输出引用库摘要和潜在问题。"""
+    return _safe_call(parse_bib_file_logic, bib_file, max_entries)
+
+
+@mcp.tool()
+def check_citation_coverage(
+    main_file: str = "",
+    bib_file: str = "",
+) -> str:
+    """检查正文 citation keys 与 refs.bib 是否一致。"""
+    return _safe_call(check_citation_coverage_logic, main_file, bib_file)
 
 
 if __name__ == "__main__":
