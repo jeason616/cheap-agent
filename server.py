@@ -94,6 +94,14 @@ from cheap_agent.tools.related_work import (
     group_references_by_topic_logic,
     suggest_citation_positions_logic,
 )
+from cheap_agent.tools.rebuttal import (
+    check_response_completeness_logic,
+    draft_response_outline_logic,
+    group_reviewer_concerns_logic,
+    map_comments_to_revisions_logic,
+    parse_reviewer_comments_logic,
+    review_response_tone_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -726,6 +734,71 @@ def build_related_work_outline(
 ) -> str:
     """根据论文主题和本地参考文献生成 Related Work 组织提纲。"""
     return _safe_call(build_related_work_outline_logic, tex_path, bib_path, topics_hint, use_llm)
+
+
+@mcp.tool()
+def parse_reviewer_comments(
+    comments_text: str = "",
+    comments_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """解析审稿意见，按 reviewer、comment、concern type、severity 和 required action 分类。"""
+    return _safe_call(parse_reviewer_comments_logic, comments_text, comments_path, use_llm)
+
+
+@mcp.tool()
+def group_reviewer_concerns(
+    comments_text: str = "",
+    comments_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """聚合多个审稿人的重复关注点，找出高优先级问题。"""
+    return _safe_call(group_reviewer_concerns_logic, comments_text, comments_path, use_llm)
+
+
+@mcp.tool()
+def map_comments_to_revisions(
+    comments_text: str = "",
+    comments_path: str = "",
+    tex_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """将审稿意见映射到需要修改的论文章节、图表、表格和实验说明。"""
+    return _safe_call(map_comments_to_revisions_logic, comments_text, comments_path, tex_path, use_llm)
+
+
+@mcp.tool()
+def check_response_completeness(
+    comments_text: str = "",
+    response_text: str = "",
+    comments_path: str = "",
+    response_path: str = "",
+    tex_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查 response letter 是否逐条回应审稿意见，是否说明修改位置和证据。"""
+    return _safe_call(check_response_completeness_logic, comments_text, response_text, comments_path, response_path, tex_path, use_llm)
+
+
+@mcp.tool()
+def review_response_tone(
+    response_text: str = "",
+    response_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查 response / rebuttal 语气是否礼貌、专业、克制。"""
+    return _safe_call(review_response_tone_logic, response_text, response_path, use_llm)
+
+
+@mcp.tool()
+def draft_response_outline(
+    comments_text: str = "",
+    comments_path: str = "",
+    tex_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """为每条审稿意见生成结构化回复提纲，而不是最终回复正文。"""
+    return _safe_call(draft_response_outline_logic, comments_text, comments_path, tex_path, use_llm)
 
 
 if __name__ == "__main__":

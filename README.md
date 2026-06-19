@@ -142,6 +142,17 @@
 | `suggest_citation_positions` | 检查正文中可能需要引用的位置，推荐本地 refs.bib 候选 | 是（可选） |
 | `build_related_work_outline` | 根据论文主题和本地参考文献生成 Related Work 组织提纲 | 是（可选） |
 
+### 审稿意见与 Rebuttal / Response 辅助工具
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `parse_reviewer_comments` | 解析审稿意见，按 reviewer、comment、concern type、severity 分类 | 是（可选） |
+| `group_reviewer_concerns` | 聚合多个审稿人的重复关注点，找出高优先级问题 | 是（可选） |
+| `map_comments_to_revisions` | 将审稿意见映射到需要修改的论文章节 | 是（可选） |
+| `check_response_completeness` | 检查 response letter 是否完整回应每条审稿意见 | 是（可选） |
+| `review_response_tone` | 检查 response / rebuttal 语气是否礼貌、专业、克制 | 是（可选） |
+| `draft_response_outline` | 为每条审稿意见生成结构化回复提纲 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -385,6 +396,15 @@ default_tools_approval_mode = "prompt"
 - `check_bibtex_quality()` — 检查 refs.bib 是否有字段缺失或格式问题
 - `suggest_citation_positions()` — 检查 Introduction 和 Related Work 中哪些句子可能需要引用
 - `build_related_work_outline()` — 生成 Related Work 的扩写提纲
+
+### 审稿意见与 Rebuttal / Response 辅助工具
+
+- `parse_reviewer_comments(comments_text="...")` — 解析审稿意见
+- `group_reviewer_concerns(comments_text="...")` — 找出审稿人共同关注的高优先级问题
+- `map_comments_to_revisions(comments_text="...")` — 将审稿意见映射到需要修改的论文章节
+- `check_response_completeness(comments_text="...", response_text="...")` — 检查 response 是否完整回应
+- `review_response_tone(response_text="...")` — 检查回复语气是否专业克制
+- `draft_response_outline(comments_text="...")` — 为每条审稿意见生成 response outline
 
 ## 安全说明
 
