@@ -2,53 +2,53 @@
 
 # 🔍 cheap-agent
 
-**本地运行的 MCP 只读代码分析与论文写作辅助智能体**
+**Local MCP Read-Only Code Analysis & Paper Writing Assistant**
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
 [![MCP Server](https://img.shields.io/badge/MCP-Server-green?logo=model-context-protocol)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tools: 74](https://img.shields.io/badge/Tools-74-purple)](#-工具总览)
+[![Tools: 74](https://img.shields.io/badge/Tools-74-purple)](#-tool-overview)
 
-[English](README_EN.md) · 中文
+English · [中文](README_CN.md)
 
 </div>
 
 ---
 
-## ✨ 这是什么？
+## ✨ What is this?
 
-`cheap-agent` 是一个本地运行的 **MCP Server**，被 [Codex](https://openai.com/index/codex/)、[Claude Code](https://docs.anthropic.com/en/docs/claude-code)、[MiMo Code](https://github.com) 等 MCP Client 调用，提供 **代码分析** 和 **论文写作辅助** 能力。
+`cheap-agent` is a locally running **MCP Server** called by [Codex](https://openai.com/index/codex/), [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [MiMo Code](https://github.com), and other MCP Clients. It provides **code analysis** and **academic paper writing assistance**.
 
-它**只负责分析和建议**，不负责修改代码或论文。最终修改由 Codex 完成。
+It **only analyzes and suggests** — it never modifies code or papers. Final changes are made by Codex.
 
 ```
 ┌─────────────┐     MCP (stdio)     ┌──────────────────┐
 │  Codex /    │ ◄─────────────────► │  cheap-agent     │
 │  Claude Code│                     │  MCP Server      │
-│  MiMo Code  │                     │  (只读分析)       │
+│  MiMo Code  │                     │  (read-only)     │
 └─────────────┘                     └──────────────────┘
                                            │
                                            ▼
                                     ┌──────────────┐
-                                    │ 你的项目文件  │
-                                    │ (不修改)      │
+                                    │ Your project  │
+                                    │ (unmodified)  │
                                     └──────────────┘
 ```
 
-## 🛡️ 安全边界
+## 🛡️ Safety
 
-| 特性 | 说明 |
-|:-----|:-----|
-| 🔒 **只读** | 不修改、不创建、不删除任何文件 |
-| 🚫 **无 Shell** | 不执行任何命令（git、python、npm 等） |
-| 📁 **路径沙箱** | 所有文件访问限制在 `WORKSPACE_ROOT` 内 |
-| 🔑 **密钥脱敏** | 缓存写入前自动脱敏 API_KEY、TOKEN 等 |
-| 🤖 **不编造** | 不编造实验结果、引用、图表或方法 |
-| 🌐 **不联网** | 不访问网络查询参考文献 |
+| Feature | Description |
+|:--------|:-----------|
+| 🔒 **Read-only** | Never modifies, creates, or deletes files |
+| 🚫 **No Shell** | Never executes commands (git, python, npm, etc.) |
+| 📁 **Path sandbox** | All file access restricted to `WORKSPACE_ROOT` |
+| 🔑 **Secret masking** | API_KEY, TOKEN auto-masked before caching |
+| 🤖 **No fabrication** | Never invents results, citations, figures, or methods |
+| 🌐 **No network** | Never accesses the internet to search references |
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1️⃣ 安装
+### 1️⃣ Install
 
 ```bash
 cd cheap-agent
@@ -58,7 +58,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-### 2️⃣ 配置 `.env`
+### 2️⃣ Configure `.env`
 
 ```env
 # OpenAI-compatible API
@@ -66,13 +66,13 @@ LLM_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
 LLM_API_KEY=your-key-here
 LLM_MODEL=mimo-v2.5-pro
 
-# 工具 Profile（可选：minimal / code / paper / full / safe / debug）
+# Tool Profile (optional: minimal / code / paper / full / safe / debug)
 MCP_PROFILE=full
 ```
 
-### 3️⃣ 接入 MCP Client
+### 3️⃣ Connect to MCP Client
 
-**Codex** — 编辑 `~/.codex/config.toml`：
+**Codex** — edit `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.cheap_agent]
@@ -80,13 +80,13 @@ command = "/path/to/cheap-agent/.venv/bin/python"
 args = ["/path/to/cheap-agent/server.py"]
 ```
 
-**Claude Code** — 运行：
+**Claude Code** — run:
 
 ```bash
 claude mcp add cheap-agent -- /path/to/cheap-agent/.venv/bin/python /path/to/cheap-agent/server.py
 ```
 
-### 4️⃣ 测试
+### 4️⃣ Test
 
 ```bash
 python -m pytest tests/ -v --ignore=tests/test_integration.py
@@ -94,248 +94,248 @@ python -m pytest tests/ -v --ignore=tests/test_integration.py
 
 ---
 
-## 🧰 工具总览
+## 🧰 Tool Overview
 
-> 共 **74 个工具**，全部只读，支持 `use_llm=False` 纯规则模式
+> **74 tools** total, all read-only, all support `use_llm=False` rule-based mode
 
-### 🔧 代码辅助（35 个）
+### 🔧 Code Assistance (35 tools)
 
 <details>
-<summary><b>📂 代码读取</b></summary>
+<summary><b>📂 Code Reading</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `read_file_around_line` | 读取指定行附近代码 | ❌ |
-| `extract_symbols` | 提取函数/类/import 结构 | ❌ |
-| `search_code` | 关键词搜索项目文件 | ❌ |
-| `find_related_files` | 根据任务找相关文件 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `read_file_around_line` | Read code snippet around a line | ❌ |
+| `extract_symbols` | Extract functions/classes/imports | ❌ |
+| `search_code` | Keyword search across project | ❌ |
+| `find_related_files` | Find files related to a task | ✅ |
 
 </details>
 
 <details>
-<summary><b>🗺️ 项目理解</b></summary>
+<summary><b>🗺️ Project Understanding</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `build_project_map` | 项目结构地图 | ❌ |
-| `summarize_file` | 单文件摘要 | ✅ |
-| `summarize_directory` | 目录摘要 | ✅ |
-| `detect_project_profile` | 项目类型检测 | ❌ |
-| `build_project_profile_v2` | 完整项目画像 | ✅ |
-| `get_codex_onboarding_pack` | 启动上下文包 | ❌ |
-| `infer_project_runbook` | 运行手册推断 | ✅ |
-| `recommend_workflow_for_task` | 任务工具推荐 | ❌ |
-| `explain_project_conventions` | 项目约定总结 | ✅ |
-
-</details>
-
-<details>
-<summary><b>🐛 错误诊断</b></summary>
-
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `analyze_traceback_with_context` | Traceback + 代码上下文分析 | ✅ |
-| `diagnose_import_error` | 导入错误诊断 | ✅ |
-| `diagnose_training_error` | CUDA OOM / shape mismatch 等 | ✅ |
-| `suggest_debug_steps` | 调试计划生成 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `build_project_map` | Project structure map | ❌ |
+| `summarize_file` | Single file summary | ✅ |
+| `summarize_directory` | Directory summary | ✅ |
+| `detect_project_profile` | Project type detection | ❌ |
+| `build_project_profile_v2` | Detailed project profile | ✅ |
+| `get_codex_onboarding_pack` | Onboarding context pack | ❌ |
+| `infer_project_runbook` | Runbook inference | ✅ |
+| `recommend_workflow_for_task` | Tool recommendation | ❌ |
+| `explain_project_conventions` | Project conventions | ✅ |
 
 </details>
 
 <details>
-<summary><b>🧪 测试验证</b></summary>
+<summary><b>🐛 Error Diagnostics</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `suggest_minimal_repro` | 最小复现方案 | ✅ |
-| `generate_unit_test_plan` | 单元测试计划 | ✅ |
-| `check_config_consistency` | 配置一致性检查 | ✅ |
-| `suggest_validation_plan` | 验证计划 | ✅ |
-
-</details>
-
-<details>
-<summary><b>🔍 代码审查</b></summary>
-
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `review_file` | 代码质量审查 | ✅ |
-| `review_diff` | Diff 审查 | ✅ |
-| `risk_check_before_edit` | 修改前风险分析 | ✅ |
-| `post_edit_review` | 修改后审查 | ✅ |
-| `analyze_change_impact` | 影响范围分析 | ✅ |
-
-</details>
-
-### 📝 论文辅助（39 个）
-
-<details>
-<summary><b>📄 论文结构</b></summary>
-
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `detect_paper_project` | 检测论文项目 | ❌ |
-| `build_paper_map` | 论文项目地图 | ❌ |
-| `summarize_latex_structure` | LaTeX 结构总结 | ✅ |
-| `find_paper_sections` | 章节查找 | ❌ |
-| `review_paper_structure` | 结构完整性检查 | ✅ |
-| `check_claim_evidence` | Claim-Evidence 检查 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `analyze_traceback_with_context` | Traceback + code context | ✅ |
+| `diagnose_import_error` | Import error diagnosis | ✅ |
+| `diagnose_training_error` | CUDA OOM / shape mismatch | ✅ |
+| `suggest_debug_steps` | Debug plan generation | ✅ |
 
 </details>
 
 <details>
-<summary><b>📊 实验核对</b></summary>
+<summary><b>🧪 Testing & Validation</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `parse_latex_tables` | LaTeX 表格解析 | ❌ |
-| `extract_experiment_claims` | 实验 Claim 提取 | ✅ |
-| `check_result_claim_consistency` | 正文-表格一致性 | ✅ |
-| `check_ablation_logic` | 消融实验完整性 | ✅ |
-| `check_metric_consistency` | 指标格式统一性 | ❌ |
-
-</details>
-
-<details>
-<summary><b>✍️ 写作审查</b></summary>
-
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `review_academic_paragraph` | 段落表达质量 | ✅ |
-| `check_abstract_quality` | 摘要完整性 | ✅ |
-| `check_introduction_logic` | Introduction 逻辑链 | ✅ |
-| `check_contribution_clarity` | 贡献点清晰度 | ✅ |
-| `check_term_consistency` | 术语一致性 | ✅ |
-| `check_ieee_style` | IEEE/TGRS 风格 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `suggest_minimal_repro` | Minimal reproduction plan | ✅ |
+| `generate_unit_test_plan` | Unit test plan | ✅ |
+| `check_config_consistency` | Config consistency check | ✅ |
+| `suggest_validation_plan` | Validation plan | ✅ |
 
 </details>
 
 <details>
-<summary><b>🖼️ 图表引用</b></summary>
+<summary><b>🔍 Code Review</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `parse_figures_and_labels` | 图表/公式/Label 解析 | ❌ |
-| `check_figure_reference_consistency` | 引用一致性检查 | ❌ |
-| `review_figure_caption` | Figure Caption 审查 | ✅ |
-| `review_table_caption` | Table Caption 审查 | ✅ |
-| `check_caption_text_consistency` | Caption-正文一致性 | ✅ |
-| `check_equation_reference_consistency` | 公式引用一致性 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `review_file` | Code quality review | ✅ |
+| `review_diff` | Diff review | ✅ |
+| `risk_check_before_edit` | Pre-edit risk analysis | ✅ |
+| `post_edit_review` | Post-edit review | ✅ |
+| `analyze_change_impact` | Change impact analysis | ✅ |
+
+</details>
+
+### 📝 Paper Assistance (39 tools)
+
+<details>
+<summary><b>📄 Paper Structure</b></summary>
+
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `detect_paper_project` | Detect paper project | ❌ |
+| `build_paper_map` | Paper project map | ❌ |
+| `summarize_latex_structure` | LaTeX structure summary | ✅ |
+| `find_paper_sections` | Section finder | ❌ |
+| `review_paper_structure` | Structure completeness | ✅ |
+| `check_claim_evidence` | Claim-evidence check | ✅ |
 
 </details>
 
 <details>
-<summary><b>📚 参考文献</b></summary>
+<summary><b>📊 Experiment Verification</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `parse_bib_file` | BibTeX 解析 | ❌ |
-| `check_citation_coverage` | 引用覆盖检查 | ❌ |
-| `group_references_by_topic` | 参考文献主题分组 | ✅ |
-| `check_related_work_coverage` | Related Work 覆盖度 | ✅ |
-| `check_reference_recency` | 文献年份检查 | ❌ |
-| `check_bibtex_quality` | BibTeX 质量检查 | ❌ |
-| `suggest_citation_positions` | 补引用位置建议 | ✅ |
-| `build_related_work_outline` | Related Work 提纲 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `parse_latex_tables` | LaTeX table parsing | ❌ |
+| `extract_experiment_claims` | Experiment claim extraction | ✅ |
+| `check_result_claim_consistency` | Text-table consistency | ✅ |
+| `check_ablation_logic` | Ablation completeness | ✅ |
+| `check_metric_consistency` | Metric notation consistency | ❌ |
 
 </details>
 
 <details>
-<summary><b>📬 审稿回复</b></summary>
+<summary><b>✍️ Writing Review</b></summary>
 
-| 工具 | 说明 | LLM |
-|:-----|:-----|:----|
-| `parse_reviewer_comments` | 审稿意见解析 | ✅ |
-| `group_reviewer_concerns` | 问题聚类 | ✅ |
-| `map_comments_to_revisions` | 意见→修改位置映射 | ✅ |
-| `check_response_completeness` | Response 完整性 | ✅ |
-| `review_response_tone` | Response 语气审查 | ✅ |
-| `draft_response_outline` | Response 提纲生成 | ✅ |
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `review_academic_paragraph` | Paragraph quality | ✅ |
+| `check_abstract_quality` | Abstract completeness | ✅ |
+| `check_introduction_logic` | Introduction logic chain | ✅ |
+| `check_contribution_clarity` | Contribution clarity | ✅ |
+| `check_term_consistency` | Term consistency | ✅ |
+| `check_ieee_style` | IEEE/TGRS style | ✅ |
+
+</details>
+
+<details>
+<summary><b>🖼️ Figure & Reference</b></summary>
+
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `parse_figures_and_labels` | Figure/table/equation parsing | ❌ |
+| `check_figure_reference_consistency` | Reference consistency | ❌ |
+| `review_figure_caption` | Figure caption review | ✅ |
+| `review_table_caption` | Table caption review | ✅ |
+| `check_caption_text_consistency` | Caption-text consistency | ✅ |
+| `check_equation_reference_consistency` | Equation reference check | ✅ |
+
+</details>
+
+<details>
+<summary><b>📚 References & Related Work</b></summary>
+
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `parse_bib_file` | BibTeX parsing | ❌ |
+| `check_citation_coverage` | Citation coverage check | ❌ |
+| `group_references_by_topic` | Reference topic grouping | ✅ |
+| `check_related_work_coverage` | Related Work coverage | ✅ |
+| `check_reference_recency` | Reference recency check | ❌ |
+| `check_bibtex_quality` | BibTeX quality check | ❌ |
+| `suggest_citation_positions` | Citation position suggestions | ✅ |
+| `build_related_work_outline` | Related Work outline | ✅ |
+
+</details>
+
+<details>
+<summary><b>📬 Reviewer Response</b></summary>
+
+| Tool | Description | LLM |
+|:-----|:-----------|:----|
+| `parse_reviewer_comments` | Reviewer comment parsing | ✅ |
+| `group_reviewer_concerns` | Concern clustering | ✅ |
+| `map_comments_to_revisions` | Comment-to-revision mapping | ✅ |
+| `check_response_completeness` | Response completeness | ✅ |
+| `review_response_tone` | Response tone review | ✅ |
+| `draft_response_outline` | Response outline generation | ✅ |
 
 </details>
 
 ---
 
-## 🎛️ 工具 Profile 系统
+## 🎛️ Tool Profile System
 
-通过 `MCP_PROFILE` 控制启用哪些工具，避免工具列表过长：
+Control which tools are enabled via `MCP_PROFILE`:
 
-| Profile | 工具数 | 适用场景 |
+| Profile | Tools | Use Case |
 |:--------|:------|:---------|
-| `minimal` | ~10 | ⚡ 快速启动、低开销 |
-| `code` | ~35 | 💻 代码开发和调试 |
-| `paper` | ~44 | 📝 论文写作和投稿 |
-| `full` | 74 | 🔓 全部工具（默认） |
-| `safe` | ~15 | 🛡️ 只有纯规则、低风险工具 |
-| `debug` | ~5 | 🔧 MCP 自检和性能调试 |
+| `minimal` | ~10 | ⚡ Fast startup, low overhead |
+| `code` | ~35 | 💻 Code development & debugging |
+| `paper` | ~44 | 📝 Paper writing & submission |
+| `full` | 74 | 🔓 All tools (default) |
+| `safe` | ~15 | 🛡️ Only rule-based, low-risk tools |
+| `debug` | ~5 | 🔧 MCP self-diagnostics |
 
 ```env
-# 示例：只启用论文相关工具
+# Example: only enable paper tools
 MCP_PROFILE=paper
 ```
 
-### 📊 元工具
+### 📊 Meta Tools
 
-| 工具 | 说明 |
-|:-----|:-----|
-| `show_active_profile` | 查看当前 Profile 和启用的工具组 |
-| `list_available_tools` | 列出当前可用工具 |
-| `explain_tool_routing` | 根据任务推荐工具调用顺序 |
-
----
-
-## ⚡ 性能
-
-| 工具类型 | 典型延迟 | 说明 |
-|:---------|:---------|:-----|
-| 🟢 纯规则工具 | < 1s | `search_code`、`parse_bib_file` 等 |
-| 🟡 LLM 工具 | 5-30s | 取决于模型和输入长度 |
-| 🔵 缓存命中 | < 0.5s | 重复调用自动走缓存 |
+| Tool | Description |
+|:-----|:-----------|
+| `show_active_profile` | Show current profile and enabled groups |
+| `list_available_tools` | List currently available tools |
+| `explain_tool_routing` | Recommend tools for a task |
 
 ---
 
-## 📁 项目结构
+## ⚡ Performance
+
+| Tool Type | Latency | Notes |
+|:----------|:--------|:------|
+| 🟢 Rule-based | < 1s | `search_code`, `parse_bib_file`, etc. |
+| 🟡 LLM tools | 5-30s | Depends on model and input length |
+| 🔵 Cache hit | < 0.5s | Repeated calls use cache automatically |
+
+---
+
+## 📁 Project Structure
 
 ```
 cheap-agent/
-├── server.py              # 🚀 MCP Server 入口
-├── config.py              # ⚙️ 配置加载
-├── tool_registry.py       # 📋 工具元信息注册表
-├── profiles.py            # 🎛️ Profile 管理
-├── workspace.py           # 📁 安全文件读取
-├── llm_client.py          # 🤖 LLM 调用
-├── cache.py               # 💾 内存缓存
-├── cache_manager.py       # 💿 磁盘缓存
-├── parsers/               # 📖 LaTeX/BibTeX 解析
-├── prompts/               # 📝 提示词模板
-└── tools/                 # 🧰 20 个工具模块
-    ├── code.py            #   代码分析
-    ├── reading.py         #   文件读取
-    ├── project.py         #   项目理解
-    ├── diagnostics.py     #   错误诊断
-    ├── testing.py         #   测试验证
-    ├── review.py          #   代码审查
-    ├── cache_tools.py     #   缓存管理
-    ├── profile.py         #   项目画像
-    ├── meta.py            #   元工具
-    ├── paper.py           #   论文结构
-    ├── experiments.py     #   实验核对
-    ├── writing.py         #   写作审查
-    ├── figures.py         #   图表引用
-    ├── related_work.py    #   参考文献
-    └── rebuttal.py        #   审稿回复
+├── server.py              # 🚀 MCP Server entry point
+├── config.py              # ⚙️ Configuration
+├── tool_registry.py       # 📋 Tool metadata registry
+├── profiles.py            # 🎛️ Profile management
+├── workspace.py           # 📁 Safe file reading
+├── llm_client.py          # 🤖 LLM client
+├── cache.py               # 💾 In-memory cache
+├── cache_manager.py       # 💿 Disk cache
+├── parsers/               # 📖 LaTeX/BibTeX parsers
+├── prompts/               # 📝 Prompt templates
+└── tools/                 # 🧰 20 tool modules
+    ├── code.py            #   Code analysis
+    ├── reading.py         #   File reading
+    ├── project.py         #   Project understanding
+    ├── diagnostics.py     #   Error diagnostics
+    ├── testing.py         #   Testing & validation
+    ├── review.py          #   Code review
+    ├── cache_tools.py     #   Cache management
+    ├── profile.py         #   Project profiling
+    ├── meta.py            #   Meta tools
+    ├── paper.py           #   Paper structure
+    ├── experiments.py     #   Experiment verification
+    ├── writing.py         #   Writing review
+    ├── figures.py         #   Figure & reference
+    ├── related_work.py    #   References & Related Work
+    └── rebuttal.py        #   Reviewer response
 ```
 
 ---
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎 PR！请确保：
+PRs welcome! Please ensure:
 
-- [ ] 新工具是只读的
-- [ ] 不执行 shell 命令
-- [ ] 路径限制在 `WORKSPACE_ROOT` 内
-- [ ] 添加到 `tool_registry.py` 并标注 profile
-- [ ] 添加测试到 `tests/`
+- [ ] New tools are read-only
+- [ ] No shell commands executed
+- [ ] Paths restricted to `WORKSPACE_ROOT`
+- [ ] Added to `tool_registry.py` with profile tags
+- [ ] Tests added to `tests/`
 
 ---
 
