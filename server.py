@@ -78,6 +78,14 @@ from cheap_agent.tools.writing import (
     check_term_consistency_logic,
     review_academic_paragraph_logic,
 )
+from cheap_agent.tools.figures import (
+    check_caption_text_consistency_logic,
+    check_equation_reference_consistency_logic,
+    check_figure_reference_consistency_logic,
+    parse_figures_and_labels_logic,
+    review_figure_caption_logic,
+    review_table_caption_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -585,6 +593,69 @@ def check_ieee_style(
 ) -> str:
     """检查 IEEE/TGRS 风格问题，包括引用格式、缩写定义、口语表达和过强 claim。"""
     return _safe_call(check_ieee_style_logic, tex_path, use_llm, max_issues)
+
+
+@mcp.tool()
+def parse_figures_and_labels(
+    tex_path: str = "",
+    include_tables: bool = True,
+    include_equations: bool = True,
+    max_items: int = 200,
+) -> str:
+    """解析 LaTeX 中的 figure、table、equation、label、ref 和 graphics 文件。"""
+    return _safe_call(parse_figures_and_labels_logic, tex_path, include_tables, include_equations, max_items)
+
+
+@mcp.tool()
+def check_figure_reference_consistency(
+    tex_path: str = "",
+    include_equations: bool = True,
+    use_llm: bool = False,
+) -> str:
+    """检查图表、公式、章节 label 是否存在、是否重复、是否被引用，以及图文件是否缺失。"""
+    return _safe_call(check_figure_reference_consistency_logic, tex_path, include_equations, use_llm)
+
+
+@mcp.tool()
+def review_figure_caption(
+    label: str = "",
+    caption_text: str = "",
+    tex_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """审查 figure caption 是否具体、清楚、符合 IEEE/TGRS 风格。"""
+    return _safe_call(review_figure_caption_logic, label, caption_text, tex_path, use_llm)
+
+
+@mcp.tool()
+def review_table_caption(
+    label: str = "",
+    caption_text: str = "",
+    tex_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """审查 table caption 是否说明数据集、指标、比较对象和最佳值标记。"""
+    return _safe_call(review_table_caption_logic, label, caption_text, tex_path, use_llm)
+
+
+@mcp.tool()
+def check_caption_text_consistency(
+    tex_path: str = "",
+    use_llm: bool = True,
+    max_items: int = 50,
+) -> str:
+    """检查 caption 与正文引用该图表附近文字是否一致。"""
+    return _safe_call(check_caption_text_consistency_logic, tex_path, use_llm, max_items)
+
+
+@mcp.tool()
+def check_equation_reference_consistency(
+    tex_path: str = "",
+    use_llm: bool = True,
+    max_equations: int = 100,
+) -> str:
+    """检查公式 label、公式引用、符号解释和引用格式是否一致。"""
+    return _safe_call(check_equation_reference_consistency_logic, tex_path, use_llm, max_equations)
 
 
 if __name__ == "__main__":

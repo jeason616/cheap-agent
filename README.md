@@ -120,6 +120,17 @@
 | `check_term_consistency` | 检查全文术语、缩写、方法名、指标名是否一致 | 是（可选） |
 | `check_ieee_style` | 检查 IEEE/TGRS 风格问题（引用格式、缩写定义、口语表达等） | 是（可选） |
 
+### 图表、Caption 与正文引用一致性审查工具
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `parse_figures_and_labels` | 解析 LaTeX 中的 figure、table、equation、label、ref 和 graphics 文件 | 否 |
+| `check_figure_reference_consistency` | 检查图表/公式 label 是否存在、是否重复、是否被引用、图文件是否缺失 | 否 |
+| `review_figure_caption` | 审查 figure caption 是否具体、清楚、符合 IEEE/TGRS 风格 | 是（可选） |
+| `review_table_caption` | 审查 table caption 是否说明数据集、指标、比较对象和最佳值标记 | 是（可选） |
+| `check_caption_text_consistency` | 检查 caption 与正文引用该图表附近文字是否一致 | 是（可选） |
+| `check_equation_reference_consistency` | 检查公式 label、公式引用、符号解释和引用格式是否一致 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -345,6 +356,15 @@ default_tools_approval_mode = "prompt"
 - `check_contribution_clarity()` — 检查贡献点是否具体且有实验支撑
 - `check_term_consistency(terms_hint="SCD-DINO, Soft Top-K, scatter descriptor")` — 检查术语是否统一
 - `check_ieee_style()` — 检查全文 IEEE/TGRS 风格问题
+
+### 图表、Caption 与正文引用一致性审查工具
+
+- `parse_figures_and_labels()` — 解析当前论文中的图表、公式和 label
+- `check_figure_reference_consistency()` — 检查是否有未定义引用、未引用图表或缺失图文件
+- `review_figure_caption(label="fig:query_refinement")` — 审查指定图注是否清楚
+- `review_table_caption(label="tab:main_results")` — 审查指定表注是否完整
+- `check_caption_text_consistency()` — 检查正文对图表的描述是否和 caption 一致
+- `check_equation_reference_consistency()` — 检查公式引用和符号解释是否一致
 
 ## 安全说明
 
