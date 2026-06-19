@@ -86,6 +86,14 @@ from cheap_agent.tools.figures import (
     review_figure_caption_logic,
     review_table_caption_logic,
 )
+from cheap_agent.tools.related_work import (
+    build_related_work_outline_logic,
+    check_bibtex_quality_logic,
+    check_reference_recency_logic,
+    check_related_work_coverage_logic,
+    group_references_by_topic_logic,
+    suggest_citation_positions_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -656,6 +664,68 @@ def check_equation_reference_consistency(
 ) -> str:
     """检查公式 label、公式引用、符号解释和引用格式是否一致。"""
     return _safe_call(check_equation_reference_consistency_logic, tex_path, use_llm, max_equations)
+
+
+@mcp.tool()
+def group_references_by_topic(
+    bib_path: str = "",
+    topics_hint: str = "",
+    use_llm: bool = True,
+) -> str:
+    """根据本地 refs.bib 将参考文献按主题分组，辅助 Related Work 写作。"""
+    return _safe_call(group_references_by_topic_logic, bib_path, topics_hint, use_llm)
+
+
+@mcp.tool()
+def check_related_work_coverage(
+    tex_path: str = "",
+    bib_path: str = "",
+    topics_hint: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查 Related Work 是否覆盖必要研究方向。"""
+    return _safe_call(check_related_work_coverage_logic, tex_path, bib_path, topics_hint, use_llm)
+
+
+@mcp.tool()
+def check_reference_recency(
+    bib_path: str = "",
+    recent_year_threshold: int = 3,
+    use_llm: bool = False,
+) -> str:
+    """检查参考文献年份分布和近期文献比例。"""
+    return _safe_call(check_reference_recency_logic, bib_path, recent_year_threshold, use_llm)
+
+
+@mcp.tool()
+def check_bibtex_quality(
+    bib_path: str = "",
+    use_llm: bool = False,
+) -> str:
+    """检查 BibTeX 条目字段缺失、重复、标题大小写、venue 不统一等问题。"""
+    return _safe_call(check_bibtex_quality_logic, bib_path, use_llm)
+
+
+@mcp.tool()
+def suggest_citation_positions(
+    tex_path: str = "",
+    section_name: str = "",
+    use_llm: bool = True,
+    max_suggestions: int = 30,
+) -> str:
+    """检查正文中可能需要引用的位置，并从本地 refs.bib 推荐候选 cite key。"""
+    return _safe_call(suggest_citation_positions_logic, tex_path, section_name, use_llm, max_suggestions)
+
+
+@mcp.tool()
+def build_related_work_outline(
+    tex_path: str = "",
+    bib_path: str = "",
+    topics_hint: str = "",
+    use_llm: bool = True,
+) -> str:
+    """根据论文主题和本地参考文献生成 Related Work 组织提纲。"""
+    return _safe_call(build_related_work_outline_logic, tex_path, bib_path, topics_hint, use_llm)
 
 
 if __name__ == "__main__":

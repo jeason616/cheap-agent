@@ -131,6 +131,17 @@
 | `check_caption_text_consistency` | 检查 caption 与正文引用该图表附近文字是否一致 | 是（可选） |
 | `check_equation_reference_consistency` | 检查公式 label、公式引用、符号解释和引用格式是否一致 | 是（可选） |
 
+### Related Work 与参考文献增强工具
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `group_references_by_topic` | 根据本地 refs.bib 将参考文献按主题分组 | 是（可选） |
+| `check_related_work_coverage` | 检查 Related Work 是否覆盖必要研究方向 | 是（可选） |
+| `check_reference_recency` | 检查参考文献年份分布和近期文献比例 | 否 |
+| `check_bibtex_quality` | 检查 BibTeX 条目字段缺失、重复、格式问题 | 否 |
+| `suggest_citation_positions` | 检查正文中可能需要引用的位置，推荐本地 refs.bib 候选 | 是（可选） |
+| `build_related_work_outline` | 根据论文主题和本地参考文献生成 Related Work 组织提纲 | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -365,6 +376,15 @@ default_tools_approval_mode = "prompt"
 - `review_table_caption(label="tab:main_results")` — 审查指定表注是否完整
 - `check_caption_text_consistency()` — 检查正文对图表的描述是否和 caption 一致
 - `check_equation_reference_consistency()` — 检查公式引用和符号解释是否一致
+
+### Related Work 与参考文献增强工具
+
+- `group_references_by_topic()` — 将 refs.bib 按主题分组
+- `check_related_work_coverage()` — 检查 Related Work 是否覆盖所需研究方向
+- `check_reference_recency()` — 检查参考文献是否过旧
+- `check_bibtex_quality()` — 检查 refs.bib 是否有字段缺失或格式问题
+- `suggest_citation_positions()` — 检查 Introduction 和 Related Work 中哪些句子可能需要引用
+- `build_related_work_outline()` — 生成 Related Work 的扩写提纲
 
 ## 安全说明
 
