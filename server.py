@@ -3,6 +3,9 @@ import sys
 from mcp.server.fastmcp import FastMCP
 
 from cheap_agent.config import MCP_HOST, MCP_PATH, MCP_PORT, MCP_TRANSPORT
+from cheap_agent.profiles import get_active_profile, is_tool_allowed
+
+# ── Logic function imports ───────────────────────────────────────
 from cheap_agent.tools.code import (
     analyze_error_log_logic,
     find_related_files_logic,
@@ -102,13 +105,22 @@ from cheap_agent.tools.rebuttal import (
     parse_reviewer_comments_logic,
     review_response_tone_logic,
 )
+from cheap_agent.tools.meta import (
+    explain_tool_routing_logic,
+    list_available_tools_logic,
+    show_active_profile_logic,
+)
 
+# ── MCP Server ──────────────────────────────────────────────────
 mcp = FastMCP(
     "local-code-agent",
     host=MCP_HOST,
     port=MCP_PORT,
     streamable_http_path=MCP_PATH,
 )
+
+_profile = get_active_profile()
+_registered_tools: list[str] = []
 
 
 def _safe_call(fn, *args, **kwargs) -> str:
@@ -119,693 +131,228 @@ def _safe_call(fn, *args, **kwargs) -> str:
         return f"[Tool Error] {e}"
 
 
+def _register(tool_name: str, fn, description: str, **params):
+    """Register a tool only if it's allowed by the current profile."""
+    if not is_tool_allowed(tool_name):
+        return
+
+    @mcp.tool(name=tool_name, description=description)
+    def _wrapper(**kwargs):
+        return _safe_call(fn, **kwargs)
+
+    _registered_tools.append(tool_name)
+
+
+# ── Meta tools (always registered) ─────────────────────────────
+
 @mcp.tool()
-def review_file(
-    file_path: str,
-    question: str = "请检查这个文件是否有明显问题，并给出修改建议。",
+def list_available_tools(
+    include_disabled: bool = False,
+    group: str = "",
 ) -> str:
-    """审查指定文件的代码质量，返回问题和建议。只读，不修改文件。"""
-    return _safe_call(review_file_logic, file_path, question)
+    """List currently available MCP tools."""
+    return list_available_tools_logic(include_disabled, group)
 
 
 @mcp.tool()
-def analyze_error_log(
-    error_log: str,
-    project_hint: str = "",
-) -> str:
-    """分析报错日志，返回可能原因和排查建议。"""
-    return _safe_call(analyze_error_log_logic, error_log, project_hint)
+def show_active_profile() -> str:
+    """Show current MCP profile and enabled groups."""
+    return show_active_profile_logic()
 
 
 @mcp.tool()
-def find_related_files(
-    task: str,
-    keyword: str | None = None,
-    max_files: int = 100,
-) -> str:
-    """根据任务描述，在项目中找出最相关的文件。"""
-    return _safe_call(find_related_files_logic, task, keyword, max_files)
-
-
-@mcp.tool()
-def generate_test_ideas(
-    file_path: str,
-    test_goal: str = "",
-) -> str:
-    """为指定文件生成测试思路，不创建实际测试文件。"""
-    return _safe_call(generate_test_ideas_logic, file_path, test_goal)
-
-
-@mcp.tool()
-def summarize_project(max_files: int = 150) -> str:
-    """分析项目文件结构，生成项目摘要。"""
-    return _safe_call(summarize_project_logic, max_files)
-
-
-@mcp.tool()
-def read_file_around_line(
-    file_path: str,
-    line_number: int,
-    context_lines: int = 80,
-) -> str:
-    """读取指定行附近的代码片段，用于报错定位。不调用 LLM。"""
-    return _safe_call(read_file_around_line_logic, file_path, line_number, context_lines)
-
-
-@mcp.tool()
-def extract_symbols(file_path: str) -> str:
-    """提取代码文件中的 imports、函数、类、入口等结构信息。不调用 LLM。"""
-    return _safe_call(extract_symbols_logic, file_path)
-
-
-@mcp.tool()
-def search_code(
-    query: str,
-    file_glob: str = "",
-    max_results: int = 50,
-    case_sensitive: bool = False,
-) -> str:
-    """在项目中搜索关键词，返回匹配的文件、行号和内容。不调用 LLM。"""
-    return _safe_call(search_code_logic, query, file_glob, max_results, case_sensitive)
-
-
-@mcp.tool()
-def build_project_map(
-    max_files: int = 500,
-    include_symbols: bool = True,
-) -> str:
-    """生成项目结构地图，包含目录、入口、配置、模型、数据等分类。"""
-    return _safe_call(build_project_map_logic, max_files, include_symbols)
-
-
-@mcp.tool()
-def summarize_file(
-    file_path: str,
-    use_llm: bool = True,
-) -> str:
-    """对单个文件生成摘要，包含结构信息和可能用途。"""
-    return _safe_call(summarize_file_logic, file_path, use_llm)
-
-
-@mcp.tool()
-def summarize_directory(
-    dir_path: str = ".",
-    max_files: int = 100,
-    use_llm: bool = True,
-) -> str:
-    """对目录生成摘要，判断目录职责和重要文件。"""
-    return _safe_call(summarize_directory_logic, dir_path, max_files, use_llm)
-
-
-@mcp.tool()
-def detect_project_profile(
-    use_llm: bool = False,
-) -> str:
-    """自动判断项目画像：语言、类型、技术栈、入口、配置等。"""
-    return _safe_call(detect_project_profile_logic, use_llm)
-
-
-@mcp.tool()
-def analyze_traceback_with_context(
-    error_log: str,
-    context_lines: int = 60,
-    use_llm: bool = True,
-) -> str:
-    """解析 Python traceback，自动读取项目内相关代码上下文并分析错误原因。"""
-    return _safe_call(analyze_traceback_with_context_logic, error_log, context_lines, use_llm)
-
-
-@mcp.tool()
-def diagnose_import_error(
-    error_log: str,
-    use_llm: bool = True,
-) -> str:
-    """专门诊断 ModuleNotFoundError、ImportError、相对导入错误等导入问题。"""
-    return _safe_call(diagnose_import_error_logic, error_log, use_llm)
-
-
-@mcp.tool()
-def diagnose_training_error(
-    error_log: str,
-    project_hint: str = "",
-    use_llm: bool = True,
-) -> str:
-    """诊断 PyTorch/YOLO 训练推理错误：CUDA OOM、shape mismatch、数据加载等。"""
-    return _safe_call(diagnose_training_error_logic, error_log, project_hint, use_llm)
-
-
-@mcp.tool()
-def suggest_debug_steps(
-    problem_description: str,
-    error_log: str = "",
-    use_project_profile: bool = True,
-    use_llm: bool = True,
-) -> str:
-    """根据问题描述和错误日志，生成结构化调试计划和排查步骤。"""
-    return _safe_call(suggest_debug_steps_logic, problem_description, error_log, use_project_profile, use_llm)
-
-
-@mcp.tool()
-def suggest_minimal_repro(
-    problem_description: str,
-    error_log: str = "",
-    related_file: str = "",
-    use_llm: bool = True,
-) -> str:
-    """根据问题描述、错误日志、相关文件生成最小复现方案。只生成方案，不创建文件。"""
-    return _safe_call(suggest_minimal_repro_logic, problem_description, error_log, related_file, use_llm)
-
-
-@mcp.tool()
-def generate_unit_test_plan(
-    file_path: str,
-    target_symbol: str = "",
-    test_goal: str = "",
-    use_llm: bool = True,
-) -> str:
-    """针对指定文件或符号生成单元测试计划。只生成计划，不创建测试文件。"""
-    return _safe_call(generate_unit_test_plan_logic, file_path, target_symbol, test_goal, use_llm)
-
-
-@mcp.tool()
-def check_config_consistency(
-    config_path: str = "",
-    code_hint: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查配置文件与代码之间的不一致风险。只读检查，不修改文件。"""
-    return _safe_call(check_config_consistency_logic, config_path, code_hint, use_llm)
-
-
-@mcp.tool()
-def suggest_validation_plan(
-    task_description: str,
-    changed_files: str = "",
-    error_log: str = "",
-    use_llm: bool = True,
-) -> str:
-    """根据任务描述和修改文件生成验证计划。只建议步骤，不执行命令。"""
-    return _safe_call(suggest_validation_plan_logic, task_description, changed_files, error_log, use_llm)
-
-
-@mcp.tool()
-def review_diff(
-    diff_text: str,
+def explain_tool_routing(
     task_description: str = "",
-    use_llm: bool = True,
 ) -> str:
-    """审查 unified diff，指出潜在bug、遗漏同步修改和测试缺口。不执行 git diff。"""
-    return _safe_call(review_diff_logic, diff_text, task_description, use_llm)
-
-
-@mcp.tool()
-def risk_check_before_edit(
-    task_description: str,
-    target_files: str = "",
-    use_llm: bool = True,
-) -> str:
-    """修改前根据任务和目标文件分析风险与影响范围。只读分析，不修改文件。"""
-    return _safe_call(risk_check_before_edit_logic, task_description, target_files, use_llm)
-
-
-@mcp.tool()
-def post_edit_review(
-    task_description: str,
-    changed_files: str,
-    diff_text: str = "",
-    use_llm: bool = True,
-) -> str:
-    """修改后根据任务、修改文件和可通diff 做二次审查。只读审查，不执行命令。"""
-    return _safe_call(post_edit_review_logic, task_description, changed_files, diff_text, use_llm)
-
-
-@mcp.tool()
-def analyze_change_impact(
-    task_description: str,
-    target_files: str = "",
-    diff_text: str = "",
-    use_llm: bool = True,
-) -> str:
-    """分析代码修改的潜在影响范围、引用位置和需要同步修改的内容。"""
-    return _safe_call(analyze_change_impact_logic, task_description, target_files, diff_text, use_llm)
-
-
-@mcp.tool()
-def cache_status() -> str:
-    """查看缓存状态、缓存大小、命名空间和近期性能统计。"""
-    return _safe_call(cache_status_logic)
-
-
-@mcp.tool()
-def clear_cache(namespace: str = "") -> str:
-    """清理过期缓存或指定缓存命名空间。只清理缓存目录，不修改项目文件。"""
-    return _safe_call(clear_cache_logic, namespace)
-
-
-@mcp.tool()
-def rebuild_project_index() -> str:
-    """强制重建项目文件索引。不调用 LLM，不读取文件全文。"""
-    return _safe_call(rebuild_project_index_logic)
-
-
-@mcp.tool()
-def get_cached_project_context(
-    include_profile: bool = True,
-    include_map: bool = True,
-    include_recent_summaries: bool = True,
-    max_items: int = 20,
-) -> str:
-    """快速返回已有缓存中的项目画像、项目地图和近期摘要。"""
-    return _safe_call(get_cached_project_context_logic, include_profile, include_map, include_recent_summaries, max_items)
-
-
-@mcp.tool()
-def export_perf_report(limit: int = 100) -> str:
-    """输出 MCP 工具性能报告，包含耗时统计和优化建议。"""
-    return _safe_call(export_perf_report_logic, limit)
-
-
-@mcp.tool()
-def build_project_profile_v2(
-    use_llm: bool = True,
-    force_refresh: bool = False,
-) -> str:
-    """构建完整项目画像 v2，包含技术栈、入口、配置、测试、运行方式和 Codex 阅读顺序。"""
-    return _safe_call(build_project_profile_v2_logic, use_llm, force_refresh)
-
-
-@mcp.tool()
-def get_codex_onboarding_pack(
-    task_description: str = "",
-    max_items: int = 20,
-    use_llm: bool = False,
-) -> str:
-    """生成简短启动上下文包，帮助 Codex 快速进入项目。默认不调用 LLM。"""
-    return _safe_call(get_codex_onboarding_pack_logic, task_description, max_items, use_llm)
-
-
-@mcp.tool()
-def infer_project_runbook(
-    use_llm: bool = True,
-    include_commands: bool = True,
-) -> str:
-    """推断项目的安装、启动、测试、调试流程。不执行命令，只建议。"""
-    return _safe_call(infer_project_runbook_logic, use_llm, include_commands)
-
-
-@mcp.tool()
-def recommend_workflow_for_task(
-    task_description: str,
-    use_llm: bool = False,
-) -> str:
-    """根据任务描述推荐 MCP 工具调用顺序和优先阅读文件。默认不调用 LLM。"""
-    return _safe_call(recommend_workflow_for_task_logic, task_description, use_llm)
-
-
-@mcp.tool()
-def explain_project_conventions(
-    use_llm: bool = True,
-) -> str:
-    """总结项目开发约定，帮助 Codex 避免破坏已有结构和安全边界。"""
-    return _safe_call(explain_project_conventions_logic, use_llm)
-
-
-@mcp.tool()
-def detect_paper_project(use_llm: bool = False) -> str:
-    """判断当前项目是否不LaTeX/Markdown 论文项目。"""
-    return _safe_call(detect_paper_project_logic, use_llm)
-
-
-@mcp.tool()
-def build_paper_map(
-    main_file: str = "",
-    include_bib: bool = True,
-    include_figures: bool = True,
-    use_llm: bool = False,
-) -> str:
-    """生成论文项目地图，包括主 tex、章节、bib、图表、labels、citations。"""
-    return _safe_call(build_paper_map_logic, main_file, include_bib, include_figures, use_llm)
-
-
-@mcp.tool()
-def summarize_latex_structure(
-    main_file: str = "",
-    use_llm: bool = True,
-) -> str:
-    """总结 LaTeX 论文结构，指出章节安排和潜在结构问题。"""
-    return _safe_call(summarize_latex_structure_logic, main_file, use_llm)
-
-
-@mcp.tool()
-def find_paper_sections(
-    query: str = "",
-    main_file: str = "",
-) -> str:
-    """查找 Introduction、Method、Experiments、Ablation 等章节位置。"""
-    return _safe_call(find_paper_sections_logic, query, main_file)
-
-
-@mcp.tool()
-def review_paper_structure(
-    main_file: str = "",
-    paper_type: str = "ieee",
-    use_llm: bool = True,
-) -> str:
-    """检查论文整体结构是否完整，尤其适合 IEEE 风格论文。"""
-    return _safe_call(review_paper_structure_logic, main_file, paper_type, use_llm)
-
-
-@mcp.tool()
-def check_claim_evidence(
-    main_file: str = "",
-    section_query: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查论文中的强 claim 是否有表格、图、引用、实验描述等内部 evidence 支撑。"""
-    return _safe_call(check_claim_evidence_logic, main_file, section_query, use_llm)
-
-
-@mcp.tool()
-def parse_bib_file(
-    bib_file: str = "",
-    max_entries: int = 200,
-) -> str:
-    """解析 BibTeX 文件，输出引用库摘要和潜在问题。"""
-    return _safe_call(parse_bib_file_logic, bib_file, max_entries)
-
-
-@mcp.tool()
-def check_citation_coverage(
-    main_file: str = "",
-    bib_file: str = "",
-) -> str:
-    """检查正文 citation keys 与 refs.bib 是否一致。"""
-    return _safe_call(check_citation_coverage_logic, main_file, bib_file)
-
-
-@mcp.tool()
-def parse_latex_tables(
-    tex_path: str = "",
-    include_raw: bool = False,
-    max_tables: int = 20,
-) -> str:
-    """解析 LaTeX 表格，提取 caption、label、列名、行名、数值和最佳值标记。"""
-    return _safe_call(parse_latex_tables_detailed, tex_path, include_raw, max_tables)
-
-
-@mcp.tool()
-def extract_experiment_claims(
-    tex_path: str = "",
-    use_llm: bool = True,
-    max_claims: int = 50,
-) -> str:
-    """从正文中提取实验相关 claim（best performance、outperform、ablation gain 等）。"""
-    return _safe_call(extract_experiment_claims_logic, tex_path, use_llm, max_claims)
-
-
-@mcp.tool()
-def check_result_claim_consistency(
-    tex_path: str = "",
-    use_llm: bool = True,
-    max_claims: int = 50,
-) -> str:
-    """检查正文实验 claim 是否被表格结果支持。"""
-    return _safe_call(check_result_claim_consistency_logic, tex_path, use_llm, max_claims)
-
-
-@mcp.tool()
-def check_ablation_logic(
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查消融实验是否完整，模块贡献是否清楚。"""
-    return _safe_call(check_ablation_logic_logic, tex_path, use_llm)
-
-
-@mcp.tool()
-def check_metric_consistency(
-    tex_path: str = "",
-    use_llm: bool = False,
-) -> str:
-    """检查 mAP、AP50、FPS 等指标格式是否统一。"""
-    return _safe_call(check_metric_consistency_logic, tex_path, use_llm)
-
-
-@mcp.tool()
-def review_academic_paragraph(
-    paragraph: str,
-    section_type: str = "",
-    use_llm: bool = True,
-) -> str:
-    """审查单段论文文字的学术表达质量，指出中式英语、过强 claim、逻辑跳跃等问题。"""
-    return _safe_call(review_academic_paragraph_logic, paragraph, section_type, use_llm)
-
-
-@mcp.tool()
-def check_abstract_quality(
-    abstract_text: str = "",
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查摘要是否覆盖背景、挑战、方法、创新、实验结果和结论意义。"""
-    return _safe_call(check_abstract_quality_logic, abstract_text, tex_path, use_llm)
-
-
-@mcp.tool()
-def check_introduction_logic(
-    tex_path: str = "",
-    introduction_text: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查 Introduction 的背景、挑战、现有不足、动机、方法和贡献逻辑链。"""
-    return _safe_call(check_introduction_logic_logic, tex_path, introduction_text, use_llm)
-
-
-@mcp.tool()
-def check_contribution_clarity(
-    tex_path: str = "",
-    contribution_text: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查贡献点是否清楚、具体、有证据、不过度宣传。"""
-    return _safe_call(check_contribution_clarity_logic, tex_path, contribution_text, use_llm)
-
-
-@mcp.tool()
-def check_term_consistency(
-    tex_path: str = "",
-    terms_hint: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查全文术语、缩写、方法名、指标名是否一致。"""
-    return _safe_call(check_term_consistency_logic, tex_path, terms_hint, use_llm)
-
-
-@mcp.tool()
-def check_ieee_style(
-    tex_path: str = "",
-    use_llm: bool = True,
-    max_issues: int = 100,
-) -> str:
-    """检查 IEEE/TGRS 风格问题，包括引用格式、缩写定义、口语表达和过强 claim。"""
-    return _safe_call(check_ieee_style_logic, tex_path, use_llm, max_issues)
-
-
-@mcp.tool()
-def parse_figures_and_labels(
-    tex_path: str = "",
-    include_tables: bool = True,
-    include_equations: bool = True,
-    max_items: int = 200,
-) -> str:
-    """解析 LaTeX 中的 figure、table、equation、label、ref 和 graphics 文件。"""
-    return _safe_call(parse_figures_and_labels_logic, tex_path, include_tables, include_equations, max_items)
-
-
-@mcp.tool()
-def check_figure_reference_consistency(
-    tex_path: str = "",
-    include_equations: bool = True,
-    use_llm: bool = False,
-) -> str:
-    """检查图表、公式、章节 label 是否存在、是否重复、是否被引用，以及图文件是否缺失。"""
-    return _safe_call(check_figure_reference_consistency_logic, tex_path, include_equations, use_llm)
-
-
-@mcp.tool()
-def review_figure_caption(
-    label: str = "",
-    caption_text: str = "",
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """审查 figure caption 是否具体、清楚、符合 IEEE/TGRS 风格。"""
-    return _safe_call(review_figure_caption_logic, label, caption_text, tex_path, use_llm)
-
-
-@mcp.tool()
-def review_table_caption(
-    label: str = "",
-    caption_text: str = "",
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """审查 table caption 是否说明数据集、指标、比较对象和最佳值标记。"""
-    return _safe_call(review_table_caption_logic, label, caption_text, tex_path, use_llm)
-
-
-@mcp.tool()
-def check_caption_text_consistency(
-    tex_path: str = "",
-    use_llm: bool = True,
-    max_items: int = 50,
-) -> str:
-    """检查 caption 与正文引用该图表附近文字是否一致。"""
-    return _safe_call(check_caption_text_consistency_logic, tex_path, use_llm, max_items)
-
-
-@mcp.tool()
-def check_equation_reference_consistency(
-    tex_path: str = "",
-    use_llm: bool = True,
-    max_equations: int = 100,
-) -> str:
-    """检查公式 label、公式引用、符号解释和引用格式是否一致。"""
-    return _safe_call(check_equation_reference_consistency_logic, tex_path, use_llm, max_equations)
-
-
-@mcp.tool()
-def group_references_by_topic(
-    bib_path: str = "",
-    topics_hint: str = "",
-    use_llm: bool = True,
-) -> str:
-    """根据本地 refs.bib 将参考文献按主题分组，辅助 Related Work 写作。"""
-    return _safe_call(group_references_by_topic_logic, bib_path, topics_hint, use_llm)
-
-
-@mcp.tool()
-def check_related_work_coverage(
-    tex_path: str = "",
-    bib_path: str = "",
-    topics_hint: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查 Related Work 是否覆盖必要研究方向。"""
-    return _safe_call(check_related_work_coverage_logic, tex_path, bib_path, topics_hint, use_llm)
-
-
-@mcp.tool()
-def check_reference_recency(
-    bib_path: str = "",
-    recent_year_threshold: int = 3,
-    use_llm: bool = False,
-) -> str:
-    """检查参考文献年份分布和近期文献比例。"""
-    return _safe_call(check_reference_recency_logic, bib_path, recent_year_threshold, use_llm)
-
-
-@mcp.tool()
-def check_bibtex_quality(
-    bib_path: str = "",
-    use_llm: bool = False,
-) -> str:
-    """检查 BibTeX 条目字段缺失、重复、标题大小写、venue 不统一等问题。"""
-    return _safe_call(check_bibtex_quality_logic, bib_path, use_llm)
-
-
-@mcp.tool()
-def suggest_citation_positions(
-    tex_path: str = "",
-    section_name: str = "",
-    use_llm: bool = True,
-    max_suggestions: int = 30,
-) -> str:
-    """检查正文中可能需要引用的位置，并从本地 refs.bib 推荐候选 cite key。"""
-    return _safe_call(suggest_citation_positions_logic, tex_path, section_name, use_llm, max_suggestions)
-
-
-@mcp.tool()
-def build_related_work_outline(
-    tex_path: str = "",
-    bib_path: str = "",
-    topics_hint: str = "",
-    use_llm: bool = True,
-) -> str:
-    """根据论文主题和本地参考文献生成 Related Work 组织提纲。"""
-    return _safe_call(build_related_work_outline_logic, tex_path, bib_path, topics_hint, use_llm)
-
-
-@mcp.tool()
-def parse_reviewer_comments(
-    comments_text: str = "",
-    comments_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """解析审稿意见，按 reviewer、comment、concern type、severity 和 required action 分类。"""
-    return _safe_call(parse_reviewer_comments_logic, comments_text, comments_path, use_llm)
-
-
-@mcp.tool()
-def group_reviewer_concerns(
-    comments_text: str = "",
-    comments_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """聚合多个审稿人的重复关注点，找出高优先级问题。"""
-    return _safe_call(group_reviewer_concerns_logic, comments_text, comments_path, use_llm)
-
-
-@mcp.tool()
-def map_comments_to_revisions(
-    comments_text: str = "",
-    comments_path: str = "",
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """将审稿意见映射到需要修改的论文章节、图表、表格和实验说明。"""
-    return _safe_call(map_comments_to_revisions_logic, comments_text, comments_path, tex_path, use_llm)
-
-
-@mcp.tool()
-def check_response_completeness(
-    comments_text: str = "",
-    response_text: str = "",
-    comments_path: str = "",
-    response_path: str = "",
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查 response letter 是否逐条回应审稿意见，是否说明修改位置和证据。"""
-    return _safe_call(check_response_completeness_logic, comments_text, response_text, comments_path, response_path, tex_path, use_llm)
-
-
-@mcp.tool()
-def review_response_tone(
-    response_text: str = "",
-    response_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """检查 response / rebuttal 语气是否礼貌、专业、克制。"""
-    return _safe_call(review_response_tone_logic, response_text, response_path, use_llm)
-
-
-@mcp.tool()
-def draft_response_outline(
-    comments_text: str = "",
-    comments_path: str = "",
-    tex_path: str = "",
-    use_llm: bool = True,
-) -> str:
-    """为每条审稿意见生成结构化回复提纲，而不是最终回复正文。"""
-    return _safe_call(draft_response_outline_logic, comments_text, comments_path, tex_path, use_llm)
-
+    """Recommend tools for a given task description."""
+    return _safe_call(explain_tool_routing_logic, task_description)
+
+
+_registered_tools.extend(["list_available_tools", "show_active_profile", "explain_tool_routing"])
+
+# ── Cache tools ─────────────────────────────────────────────────
+
+_register("cache_status", cache_status_logic, "View cache status, namespaces, and performance stats.")
+_register("clear_cache", clear_cache_logic, "Clean expired or specified cache namespaces.")
+_register("rebuild_project_index", rebuild_project_index_logic, "Force rebuild project file index.")
+_register("get_cached_project_context", get_cached_project_context_logic, "Return cached project context.")
+_register("export_perf_report", export_perf_report_logic, "Export tool performance report.")
+
+# ── Code: reading ───────────────────────────────────────────────
+
+_register("read_file_around_line", read_file_around_line_logic,
+          "Read code snippet around a specific line number.")
+_register("extract_symbols", extract_symbols_logic,
+          "Extract functions, classes, imports from a code file.")
+_register("search_code", search_code_logic,
+          "Search keywords in project files.")
+_register("find_related_files", find_related_files_logic,
+          "Find files related to a task description.")
+
+# ── Code: project ───────────────────────────────────────────────
+
+_register("build_project_map", build_project_map_logic,
+          "Build project structure map.")
+_register("summarize_file", summarize_file_logic,
+          "Summarize a single file.")
+_register("summarize_directory", summarize_directory_logic,
+          "Summarize a directory.")
+_register("detect_project_profile", detect_project_profile_logic,
+          "Detect project type, language, and stack.")
+_register("build_project_profile_v2", build_project_profile_v2_logic,
+          "Build detailed project profile with evidence and confidence.")
+_register("get_codex_onboarding_pack", get_codex_onboarding_pack_logic,
+          "Generate short onboarding context for Codex.")
+_register("infer_project_runbook", infer_project_runbook_logic,
+          "Infer install, start, test, debug workflows.")
+_register("recommend_workflow_for_task", recommend_workflow_for_task_logic,
+          "Recommend MCP tool sequence for a task.")
+_register("explain_project_conventions", explain_project_conventions_logic,
+          "Summarize project development conventions.")
+_register("review_file", review_file_logic,
+          "Review a code file for issues.")
+_register("summarize_project", summarize_project_logic,
+          "Summarize project structure.")
+
+# ── Code: diagnostics ───────────────────────────────────────────
+
+_register("analyze_error_log", analyze_error_log_logic,
+          "Analyze error log for causes and next steps.")
+_register("analyze_traceback_with_context", analyze_traceback_with_context_logic,
+          "Parse Python traceback and read relevant code context.")
+_register("diagnose_import_error", diagnose_import_error_logic,
+          "Diagnose ModuleNotFoundError and ImportError.")
+_register("diagnose_training_error", diagnose_training_error_logic,
+          "Diagnose CUDA OOM, shape mismatch, dataloader errors.")
+_register("suggest_debug_steps", suggest_debug_steps_logic,
+          "Generate structured debug plan.")
+
+# ── Code: testing ───────────────────────────────────────────────
+
+_register("generate_test_ideas", generate_test_ideas_logic,
+          "Generate test ideas for a file.")
+_register("suggest_minimal_repro", suggest_minimal_repro_logic,
+          "Generate minimal reproduction plan.")
+_register("generate_unit_test_plan", generate_unit_test_plan_logic,
+          "Generate unit test plan for a file or symbol.")
+_register("check_config_consistency", check_config_consistency_logic,
+          "Check config file vs code consistency.")
+_register("suggest_validation_plan", suggest_validation_plan_logic,
+          "Generate validation plan for changed files.")
+
+# ── Code: review ────────────────────────────────────────────────
+
+_register("review_diff", review_diff_logic,
+          "Review unified diff for bugs and missing syncs.")
+_register("risk_check_before_edit", risk_check_before_edit_logic,
+          "Analyze risk before code changes.")
+_register("post_edit_review", post_edit_review_logic,
+          "Post-edit review with task and changed files.")
+_register("analyze_change_impact", analyze_change_impact_logic,
+          "Analyze potential impact of code changes.")
+
+# ── Paper: structure ────────────────────────────────────────────
+
+_register("detect_paper_project", detect_paper_project_logic,
+          "Detect if project is a LaTeX/Markdown paper.")
+_register("build_paper_map", build_paper_map_logic,
+          "Build paper map with sections, bib, figures, labels.")
+_register("summarize_latex_structure", summarize_latex_structure_logic,
+          "Summarize LaTeX paper structure.")
+_register("find_paper_sections", find_paper_sections_logic,
+          "Find paper sections by query.")
+_register("review_paper_structure", review_paper_structure_logic,
+          "Check paper structure completeness.")
+_register("check_claim_evidence", check_claim_evidence_logic,
+          "Check if claims have evidence support.")
+
+# ── Paper: citation ─────────────────────────────────────────────
+
+_register("parse_bib_file", parse_bib_file_logic,
+          "Parse BibTeX file and summarize entries.")
+_register("check_citation_coverage", check_citation_coverage_logic,
+          "Check citation keys consistency between text and bib.")
+
+# ── Paper: experiment ───────────────────────────────────────────
+
+_register("parse_latex_tables", parse_latex_tables_detailed,
+          "Parse LaTeX tables with caption, label, columns, rows.")
+_register("extract_experiment_claims", extract_experiment_claims_logic,
+          "Extract experiment claims from text.")
+_register("check_result_claim_consistency", check_result_claim_consistency_logic,
+          "Check if claims are supported by table results.")
+_register("check_ablation_logic", check_ablation_logic_logic,
+          "Check ablation study completeness.")
+_register("check_metric_consistency", check_metric_consistency_logic,
+          "Check metric notation consistency.")
+
+# ── Paper: writing ──────────────────────────────────────────────
+
+_register("review_academic_paragraph", review_academic_paragraph_logic,
+          "Review paragraph for academic quality.")
+_register("check_abstract_quality", check_abstract_quality_logic,
+          "Check abstract coverage and quality.")
+_register("check_introduction_logic", check_introduction_logic_logic,
+          "Check Introduction logic chain.")
+_register("check_contribution_clarity", check_contribution_clarity_logic,
+          "Check contribution clarity and evidence.")
+_register("check_term_consistency", check_term_consistency_logic,
+          "Check term and abbreviation consistency.")
+_register("check_ieee_style", check_ieee_style_logic,
+          "Check IEEE/TGRS style issues.")
+
+# ── Paper: figures ──────────────────────────────────────────────
+
+_register("parse_figures_and_labels", parse_figures_and_labels_logic,
+          "Parse LaTeX figures, tables, equations, labels, refs.")
+_register("check_figure_reference_consistency", check_figure_reference_consistency_logic,
+          "Check figure/table/equation label and ref consistency.")
+_register("review_figure_caption", review_figure_caption_logic,
+          "Review figure caption quality.")
+_register("review_table_caption", review_table_caption_logic,
+          "Review table caption quality.")
+_register("check_caption_text_consistency", check_caption_text_consistency_logic,
+          "Check caption vs referencing text consistency.")
+_register("check_equation_reference_consistency", check_equation_reference_consistency_logic,
+          "Check equation label, ref, symbol consistency.")
+
+# ── Paper: related work ─────────────────────────────────────────
+
+_register("group_references_by_topic", group_references_by_topic_logic,
+          "Group bib entries by research topic.")
+_register("check_related_work_coverage", check_related_work_coverage_logic,
+          "Check Related Work topic coverage.")
+_register("check_reference_recency", check_reference_recency_logic,
+          "Check reference year distribution.")
+_register("check_bibtex_quality", check_bibtex_quality_logic,
+          "Check BibTeX entry quality.")
+_register("suggest_citation_positions", suggest_citation_positions_logic,
+          "Suggest where citations are needed in text.")
+_register("build_related_work_outline", build_related_work_outline_logic,
+          "Generate Related Work organization outline.")
+
+# ── Paper: rebuttal ─────────────────────────────────────────────
+
+_register("parse_reviewer_comments", parse_reviewer_comments_logic,
+          "Parse reviewer comments with concern type and severity.")
+_register("group_reviewer_concerns", group_reviewer_concerns_logic,
+          "Aggregate multi-reviewer concerns.")
+_register("map_comments_to_revisions", map_comments_to_revisions_logic,
+          "Map reviewer comments to manuscript revision targets.")
+_register("check_response_completeness", check_response_completeness_logic,
+          "Check if response letter addresses all comments.")
+_register("review_response_tone", review_response_tone_logic,
+          "Check response tone for professionalism.")
+_register("draft_response_outline", draft_response_outline_logic,
+          "Generate response outline for reviewer comments.")
+
+# ── Entry point ─────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    print(f"[cheap-agent] starting with transport={MCP_TRANSPORT}", file=sys.stderr)
+    print(f"[cheap-agent] profile={_profile}, registered={len(_registered_tools)} tools", file=sys.stderr)
+    print(f"[cheap-agent] tools: {', '.join(_registered_tools)}", file=sys.stderr)
 
     if MCP_TRANSPORT == "streamable-http":
         mcp.run(transport="streamable-http")
     else:
         mcp.run()
-

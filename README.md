@@ -406,6 +406,49 @@ default_tools_approval_mode = "prompt"
 - `review_response_tone(response_text="...")` — 检查回复语气是否专业克制
 - `draft_response_outline(comments_text="...")` — 为每条审稿意见生成 response outline
 
+## Tool Profiles and Feature Switches
+
+### Profile 说明
+
+| Profile | 用途 | 工具数量 |
+|---------|------|---------|
+| `minimal` | 最小工具集合，适合快速启动 | ~10 |
+| `code` | 代码理解、调试、测试建议和代码审查 | ~35 |
+| `paper` | 论文结构、实验核对、引用检查、图表检查、写作审查和 rebuttal 辅助 | ~40 |
+| `full` | 启用所有工具，适合个人完整使用 | 全部 |
+| `safe` | 只启用最安全、纯规则、低风险工具 | ~15 |
+| `debug` | 用于 MCP 自检、缓存、性能和工具路由调试 | ~5 |
+
+### .env 配置示例
+
+```env
+# 切换 profile
+MCP_PROFILE=paper
+
+# 全局功能开关
+ENABLE_CODE_TOOLS=false
+ENABLE_PAPER_TOOLS=true
+ENABLE_CACHE_TOOLS=true
+ENABLE_META_TOOLS=true
+
+# 论文工具子类开关
+ENABLE_PAPER_EXPERIMENT_TOOLS=true
+ENABLE_PAPER_WRITING_TOOLS=true
+ENABLE_PAPER_FIGURE_TOOLS=true
+ENABLE_PAPER_REBUTTAL_TOOLS=true
+
+# 安全开关
+ENABLE_ONLY_READ_TOOLS=true
+DISABLE_ALL_WRITE_TOOLS=true
+DISABLE_SHELL_TOOLS=true
+```
+
+### Codex 使用示例
+
+- `show_active_profile()` — 查看当前 MCP profile 和启用的工具组
+- `list_available_tools()` — 列出当前可用工具
+- `explain_tool_routing(task_description="检查论文实验 claim 是否被表格支撑")` — 推荐应该调用哪些工具
+
 ## 安全说明
 
 - **只读**：不提供写文件、删除文件功能
@@ -435,6 +478,8 @@ cheap-agent/
 │   ├── prompts/           # 提示词模板
 │   │   ├── base.py        # 基础编码提示词
 │   │   └── paper.py       # 论文分析提示词
+│   ├── tool_registry.py # 工具元信息注册表
+│   ├── profiles.py      # Profile 管理和功能开关
 │   └── tools/             # MCP 工具业务逻辑
 │       ├── code.py        # LLM 分析工具
 │       ├── reading.py     # 本地读取工具
@@ -444,7 +489,13 @@ cheap-agent/
 │       ├── review.py      # 代码审查工具
 │       ├── cache_tools.py # 缓存管理工具
 │       ├── profile.py     # 项目画像工具
-│       └── paper.py       # 论文辅助工具
+│       ├── meta.py        # 元工具（profile/工具列表/路由）
+│       ├── paper.py       # 论文结构工具
+│       ├── experiments.py # 实验核对工具
+│       ├── writing.py     # 写作审查工具
+│       ├── figures.py     # 图表一致性工具
+│       ├── related_work.py # 参考文献工具
+│       └── rebuttal.py    # 审稿回复工具
 └── tests/                 # 测试文件
     ├── test_stdio.py
     ├── test_reading.py

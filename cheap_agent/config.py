@@ -183,6 +183,39 @@ MAX_RESPONSE_OUTLINES: int = _env_int("MAX_RESPONSE_OUTLINES", 100)
 MAX_REBUTTAL_OUTPUT_CHARS: int = _env_int("MAX_REBUTTAL_OUTPUT_CHARS", 16000)
 MAX_COMMENT_CONTEXT_CHARS: int = _env_int("MAX_COMMENT_CONTEXT_CHARS", 8000)
 
+MCP_PROFILE: str = os.getenv("MCP_PROFILE", "full").lower()
+
+ENABLE_CODE_TOOLS: bool = os.getenv("ENABLE_CODE_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_TOOLS: bool = os.getenv("ENABLE_PAPER_TOOLS", "true").lower() == "true"
+ENABLE_CACHE_TOOLS: bool = os.getenv("ENABLE_CACHE_TOOLS", "true").lower() == "true"
+ENABLE_META_TOOLS: bool = os.getenv("ENABLE_META_TOOLS", "true").lower() == "true"
+
+ENABLE_CODE_READING_TOOLS: bool = os.getenv("ENABLE_CODE_READING_TOOLS", "true").lower() == "true"
+ENABLE_CODE_PROJECT_TOOLS: bool = os.getenv("ENABLE_CODE_PROJECT_TOOLS", "true").lower() == "true"
+ENABLE_CODE_DIAGNOSTIC_TOOLS: bool = os.getenv("ENABLE_CODE_DIAGNOSTIC_TOOLS", "true").lower() == "true"
+ENABLE_CODE_TESTING_TOOLS: bool = os.getenv("ENABLE_CODE_TESTING_TOOLS", "true").lower() == "true"
+ENABLE_CODE_REVIEW_TOOLS: bool = os.getenv("ENABLE_CODE_REVIEW_TOOLS", "true").lower() == "true"
+
+ENABLE_PAPER_STRUCTURE_TOOLS: bool = os.getenv("ENABLE_PAPER_STRUCTURE_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_CITATION_TOOLS: bool = os.getenv("ENABLE_PAPER_CITATION_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_EXPERIMENT_TOOLS: bool = os.getenv("ENABLE_PAPER_EXPERIMENT_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_WRITING_TOOLS: bool = os.getenv("ENABLE_PAPER_WRITING_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_FIGURE_TOOLS: bool = os.getenv("ENABLE_PAPER_FIGURE_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_RELATED_WORK_TOOLS: bool = os.getenv("ENABLE_PAPER_RELATED_WORK_TOOLS", "true").lower() == "true"
+ENABLE_PAPER_REBUTTAL_TOOLS: bool = os.getenv("ENABLE_PAPER_REBUTTAL_TOOLS", "true").lower() == "true"
+
+ENABLE_LLM_CODE_TOOLS: bool = os.getenv("ENABLE_LLM_CODE_TOOLS", "true").lower() == "true"
+ENABLE_LLM_PAPER_TOOLS: bool = os.getenv("ENABLE_LLM_PAPER_TOOLS", "true").lower() == "true"
+ENABLE_LLM_REBUTTAL_TOOLS: bool = os.getenv("ENABLE_LLM_REBUTTAL_TOOLS", "true").lower() == "true"
+
+ENABLE_ONLY_READ_TOOLS: bool = os.getenv("ENABLE_ONLY_READ_TOOLS", "true").lower() == "true"
+DISABLE_ALL_WRITE_TOOLS: bool = os.getenv("DISABLE_ALL_WRITE_TOOLS", "true").lower() == "true"
+DISABLE_SHELL_TOOLS: bool = os.getenv("DISABLE_SHELL_TOOLS", "true").lower() == "true"
+
+SHOW_DISABLED_TOOLS: bool = os.getenv("SHOW_DISABLED_TOOLS", "false").lower() == "true"
+SHOW_TOOL_RISK_LEVEL: bool = os.getenv("SHOW_TOOL_RISK_LEVEL", "true").lower() == "true"
+SHOW_TOOL_LLM_REQUIREMENT: bool = os.getenv("SHOW_TOOL_LLM_REQUIREMENT", "true").lower() == "true"
+
 MCP_TRANSPORT: str = os.getenv("MCP_TRANSPORT", "stdio")
 MCP_HOST: str = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT: int = _env_int("MCP_PORT", 8000)
