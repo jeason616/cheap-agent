@@ -109,6 +109,17 @@
 | `check_ablation_logic` | 检查消融实验是否完整，模块贡献是否清楚 | 是（可选） |
 | `check_metric_consistency` | 检查 mAP、AP50、FPS 等指标格式是否统一 | 否 |
 
+### 论文语言与 IEEE 风格审查工具
+
+| 工具 | 作用 | 默认调用 LLM |
+|------|------|-------------|
+| `review_academic_paragraph` | 审查单段学术表达质量（中式英语、过强 claim、逻辑跳跃等） | 是（可选） |
+| `check_abstract_quality` | 检查摘要是否覆盖背景、挑战、方法、创新、实验、结论 | 是（可选） |
+| `check_introduction_logic` | 检查 Introduction 逻辑链（背景→挑战→不足→动机→方法→贡献） | 是（可选） |
+| `check_contribution_clarity` | 检查贡献点是否清楚、具体、有证据、不过度宣传 | 是（可选） |
+| `check_term_consistency` | 检查全文术语、缩写、方法名、指标名是否一致 | 是（可选） |
+| `check_ieee_style` | 检查 IEEE/TGRS 风格问题（引用格式、缩写定义、口语表达等） | 是（可选） |
+
 ## 安装
 
 ### Linux / macOS
@@ -325,6 +336,15 @@ default_tools_approval_mode = "prompt"
 - `check_result_claim_consistency()` — 检查正文和表格结果是否一致
 - `check_ablation_logic()` — 检查消融实验是否支撑方法模块
 - `check_metric_consistency()` — 检查 mAP、AP50、FPS 等指标格式是否统一
+
+### 论文语言与 IEEE 风格审查工具
+
+- `review_academic_paragraph(paragraph="...")` — 审查单段学术表达质量
+- `check_abstract_quality()` — 检查当前论文摘要是否完整
+- `check_introduction_logic()` — 检查 Introduction 逻辑链是否自然
+- `check_contribution_clarity()` — 检查贡献点是否具体且有实验支撑
+- `check_term_consistency(terms_hint="SCD-DINO, Soft Top-K, scatter descriptor")` — 检查术语是否统一
+- `check_ieee_style()` — 检查全文 IEEE/TGRS 风格问题
 
 ## 安全说明
 

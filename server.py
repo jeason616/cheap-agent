@@ -70,6 +70,14 @@ from cheap_agent.tools.experiments import (
     extract_experiment_claims_logic,
     parse_latex_tables_detailed,
 )
+from cheap_agent.tools.writing import (
+    check_abstract_quality_logic,
+    check_contribution_clarity_logic,
+    check_ieee_style_logic,
+    check_introduction_logic_logic,
+    check_term_consistency_logic,
+    review_academic_paragraph_logic,
+)
 
 mcp = FastMCP(
     "local-code-agent",
@@ -517,6 +525,66 @@ def check_metric_consistency(
 ) -> str:
     """检查 mAP、AP50、FPS 等指标格式是否统一。"""
     return _safe_call(check_metric_consistency_logic, tex_path, use_llm)
+
+
+@mcp.tool()
+def review_academic_paragraph(
+    paragraph: str,
+    section_type: str = "",
+    use_llm: bool = True,
+) -> str:
+    """审查单段论文文字的学术表达质量，指出中式英语、过强 claim、逻辑跳跃等问题。"""
+    return _safe_call(review_academic_paragraph_logic, paragraph, section_type, use_llm)
+
+
+@mcp.tool()
+def check_abstract_quality(
+    abstract_text: str = "",
+    tex_path: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查摘要是否覆盖背景、挑战、方法、创新、实验结果和结论意义。"""
+    return _safe_call(check_abstract_quality_logic, abstract_text, tex_path, use_llm)
+
+
+@mcp.tool()
+def check_introduction_logic(
+    tex_path: str = "",
+    introduction_text: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查 Introduction 的背景、挑战、现有不足、动机、方法和贡献逻辑链。"""
+    return _safe_call(check_introduction_logic_logic, tex_path, introduction_text, use_llm)
+
+
+@mcp.tool()
+def check_contribution_clarity(
+    tex_path: str = "",
+    contribution_text: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查贡献点是否清楚、具体、有证据、不过度宣传。"""
+    return _safe_call(check_contribution_clarity_logic, tex_path, contribution_text, use_llm)
+
+
+@mcp.tool()
+def check_term_consistency(
+    tex_path: str = "",
+    terms_hint: str = "",
+    use_llm: bool = True,
+) -> str:
+    """检查全文术语、缩写、方法名、指标名是否一致。"""
+    return _safe_call(check_term_consistency_logic, tex_path, terms_hint, use_llm)
+
+
+@mcp.tool()
+def check_ieee_style(
+    tex_path: str = "",
+    use_llm: bool = True,
+    max_issues: int = 100,
+) -> str:
+    """检查 IEEE/TGRS 风格问题，包括引用格式、缩写定义、口语表达和过强 claim。"""
+    return _safe_call(check_ieee_style_logic, tex_path, use_llm, max_issues)
 
 
 if __name__ == "__main__":
