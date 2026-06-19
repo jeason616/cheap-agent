@@ -1,509 +1,346 @@
-# cheap-agent
+<div align="center">
 
-本地运行的 **MCP 只读代码分析辅助智能体**。被 Codex、Cline 或其他 MCP Client 调用，通过 OpenAI-compatible API 调用便宜模型完成代码分析。
+# 🔍 cheap-agent
 
-## 核心特性
+**本地运行的 MCP 只读代码分析与论文写作辅助智能体**
 
-- 只读文件，不修改、不删除、不执行 shell
-- 所有文件访问限制在 `WORKSPACE_ROOT` 内
-- 通过 OpenAI-compatible API 调用本地或远程便宜模型（Ollama / DeepSeek / OpenRouter / vLLM 等）
-- 默认 `stdio` transport，Codex 本地直接调用
-- 可选 `streamable-http` transport
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-green?logo=model-context-protocol)](https://modelcontextprotocol.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tools: 74](https://img.shields.io/badge/Tools-74-purple)](#-工具总览)
 
-## 提供的 MCP 工具
+[English](README_EN.md) · 中文
 
-### LLM 分析工具（需要调用模型）
+</div>
 
-| 工具 | 作用 |
-|------|------|
-| `review_file` | 审查指定文件的代码质量 |
-| `analyze_error_log` | 分析报错日志，定位原因 |
-| `find_related_files` | 根据任务描述找相关文件 |
-| `generate_test_ideas` | 为文件生成测试思路 |
-| `summarize_project` | 分析项目结构并生成摘要 |
+---
 
-### 本地读取工具（不调用 LLM，快速响应）
+## ✨ 这是什么？
 
-| 工具 | 作用 |
-|------|------|
-| `read_file_around_line` | 读取指定行附近的代码片段，用于报错定位 |
-| `extract_symbols` | 提取文件中的函数、类、import、入口等结构信息 |
-| `search_code` | 在项目中搜索关键词，返回匹配位置 |
+`cheap-agent` 是一个本地运行的 **MCP Server**，被 [Codex](https://openai.com/index/codex/)、[Claude Code](https://docs.anthropic.com/en/docs/claude-code)、[MiMo Code](https://github.com) 等 MCP Client 调用，提供 **代码分析** 和 **论文写作辅助** 能力。
 
-### 项目理解工具（增强项目认知）
+它**只负责分析和建议**，不负责修改代码或论文。最终修改由 Codex 完成。
 
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `build_project_map` | 生成项目结构地图 | 否 |
-| `summarize_file` | 对单个文件生成摘要 | 是（可选） |
-| `summarize_directory` | 对目录生成摘要 | 是（可选） |
-| `detect_project_profile` | 自动判断项目画像 | 否（可选） |
+```
+┌─────────────┐     MCP (stdio)     ┌──────────────────┐
+│  Codex /    │ ◄─────────────────► │  cheap-agent     │
+│  Claude Code│                     │  MCP Server      │
+│  MiMo Code  │                     │  (只读分析)       │
+└─────────────┘                     └──────────────────┘
+                                           │
+                                           ▼
+                                    ┌──────────────┐
+                                    │ 你的项目文件  │
+                                    │ (不修改)      │
+                                    └──────────────┘
+```
 
-### 错误诊断工具（增强报错定位）
+## 🛡️ 安全边界
 
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `analyze_traceback_with_context` | 解析 traceback，读取项目内代码上下文并分析 | 是（可选） |
-| `diagnose_import_error` | 诊断 ModuleNotFoundError、ImportError 等导入问题 | 是（可选） |
-| `diagnose_training_error` | 诊断 CUDA OOM、shape mismatch、数据加载等训练错误 | 是（可选） |
-| `suggest_debug_steps` | 根据问题描述生成结构化调试计划 | 是（可选） |
+| 特性 | 说明 |
+|:-----|:-----|
+| 🔒 **只读** | 不修改、不创建、不删除任何文件 |
+| 🚫 **无 Shell** | 不执行任何命令（git、python、npm 等） |
+| 📁 **路径沙箱** | 所有文件访问限制在 `WORKSPACE_ROOT` 内 |
+| 🔑 **密钥脱敏** | 缓存写入前自动脱敏 API_KEY、TOKEN 等 |
+| 🤖 **不编造** | 不编造实验结果、引用、图表或方法 |
+| 🌐 **不联网** | 不访问网络查询参考文献 |
 
-### 测试和验证工具（增强测试能力）
+## 🚀 快速开始
 
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `suggest_minimal_repro` | 根据问题描述生成最小复现方案 | 是（可选） |
-| `generate_unit_test_plan` | 为文件或符号生成单元测试计划 | 是（可选） |
-| `check_config_consistency` | 检查配置文件与代码之间的不一致风险 | 是（可选） |
-| `suggest_validation_plan` | 根据任务描述和修改文件生成验证计划 | 是（可选） |
-
-### 代码审查工具（增强代码审查能力）
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `review_diff` | 审查 unified diff，指出潜在 bug 和遗漏同步修改 | 是（可选） |
-| `risk_check_before_edit` | 修改前分析风险与影响范围 | 是（可选） |
-| `post_edit_review` | 修改后做二次审查 | 是（可选） |
-| `analyze_change_impact` | 分析修改的潜在影响范围和引用位置 | 是（可选） |
-
-### 缓存和记忆工具（增强缓存层）
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `cache_status` | 查看缓存状态、大小和性能统计 | 否 |
-| `clear_cache` | 清理过期缓存或指定缓存命名空间 | 否 |
-| `rebuild_project_index` | 强制重建项目文件索引 | 否 |
-| `get_cached_project_context` | 快速返回缓存中的项目画像和摘要 | 否 |
-| `export_perf_report` | 输出工具耗时统计和优化建议 | 否 |
-
-### 项目画像与启动上下文工具（增强项目画像）
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `build_project_profile_v2` | 构建完整项目画像，包含技术栈、入口、测试、运行方式 | 是（可选） |
-| `get_codex_onboarding_pack` | 生成简短启动上下文包，帮助 Codex 快速进入项目 | 否 |
-| `infer_project_runbook` | 推断安装、启动、测试、调试流程 | 是（可选） |
-| `recommend_workflow_for_task` | 根据任务描述推荐 MCP 工具调用顺序 | 否 |
-| `explain_project_conventions` | 总结项目开发约定 | 是（可选） |
-
-### 论文辅助工具（论文写作辅助）
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `detect_paper_project` | 判断当前项目是否为 LaTeX/Markdown 论文项目 | 否 |
-| `build_paper_map` | 生成论文项目地图（章节、bib、图表、labels、citations） | 否 |
-| `summarize_latex_structure` | 总结 LaTeX 论文结构，指出章节安排和潜在问题 | 是（可选） |
-| `find_paper_sections` | 查找 Introduction、Method、Experiments 等章节位置 | 否 |
-| `review_paper_structure` | 检查论文整体结构是否完整（适合 IEEE 风格） | 是（可选） |
-| `check_claim_evidence` | 检查强 claim 是否有表格、图、引用等 evidence 支撑 | 是（可选） |
-| `parse_bib_file` | 解析 BibTeX 文件，输出引用库摘要 | 否 |
-| `check_citation_coverage` | 检查正文 citation keys 与 refs.bib 是否一致 | 否 |
-
-### 论文实验结果与表格核对工具
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `parse_latex_tables` | 解析 LaTeX 表格，提取 caption、label、列名、行名、数值和最佳值标记 | 否 |
-| `extract_experiment_claims` | 从正文中提取实验相关 claim（best/outperform/ablation gain 等） | 是（可选） |
-| `check_result_claim_consistency` | 检查正文实验 claim 是否被表格结果支持 | 是（可选） |
-| `check_ablation_logic` | 检查消融实验是否完整，模块贡献是否清楚 | 是（可选） |
-| `check_metric_consistency` | 检查 mAP、AP50、FPS 等指标格式是否统一 | 否 |
-
-### 论文语言与 IEEE 风格审查工具
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `review_academic_paragraph` | 审查单段学术表达质量（中式英语、过强 claim、逻辑跳跃等） | 是（可选） |
-| `check_abstract_quality` | 检查摘要是否覆盖背景、挑战、方法、创新、实验、结论 | 是（可选） |
-| `check_introduction_logic` | 检查 Introduction 逻辑链（背景→挑战→不足→动机→方法→贡献） | 是（可选） |
-| `check_contribution_clarity` | 检查贡献点是否清楚、具体、有证据、不过度宣传 | 是（可选） |
-| `check_term_consistency` | 检查全文术语、缩写、方法名、指标名是否一致 | 是（可选） |
-| `check_ieee_style` | 检查 IEEE/TGRS 风格问题（引用格式、缩写定义、口语表达等） | 是（可选） |
-
-### 图表、Caption 与正文引用一致性审查工具
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `parse_figures_and_labels` | 解析 LaTeX 中的 figure、table、equation、label、ref 和 graphics 文件 | 否 |
-| `check_figure_reference_consistency` | 检查图表/公式 label 是否存在、是否重复、是否被引用、图文件是否缺失 | 否 |
-| `review_figure_caption` | 审查 figure caption 是否具体、清楚、符合 IEEE/TGRS 风格 | 是（可选） |
-| `review_table_caption` | 审查 table caption 是否说明数据集、指标、比较对象和最佳值标记 | 是（可选） |
-| `check_caption_text_consistency` | 检查 caption 与正文引用该图表附近文字是否一致 | 是（可选） |
-| `check_equation_reference_consistency` | 检查公式 label、公式引用、符号解释和引用格式是否一致 | 是（可选） |
-
-### Related Work 与参考文献增强工具
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `group_references_by_topic` | 根据本地 refs.bib 将参考文献按主题分组 | 是（可选） |
-| `check_related_work_coverage` | 检查 Related Work 是否覆盖必要研究方向 | 是（可选） |
-| `check_reference_recency` | 检查参考文献年份分布和近期文献比例 | 否 |
-| `check_bibtex_quality` | 检查 BibTeX 条目字段缺失、重复、格式问题 | 否 |
-| `suggest_citation_positions` | 检查正文中可能需要引用的位置，推荐本地 refs.bib 候选 | 是（可选） |
-| `build_related_work_outline` | 根据论文主题和本地参考文献生成 Related Work 组织提纲 | 是（可选） |
-
-### 审稿意见与 Rebuttal / Response 辅助工具
-
-| 工具 | 作用 | 默认调用 LLM |
-|------|------|-------------|
-| `parse_reviewer_comments` | 解析审稿意见，按 reviewer、comment、concern type、severity 分类 | 是（可选） |
-| `group_reviewer_concerns` | 聚合多个审稿人的重复关注点，找出高优先级问题 | 是（可选） |
-| `map_comments_to_revisions` | 将审稿意见映射到需要修改的论文章节 | 是（可选） |
-| `check_response_completeness` | 检查 response letter 是否完整回应每条审稿意见 | 是（可选） |
-| `review_response_tone` | 检查 response / rebuttal 语气是否礼貌、专业、克制 | 是（可选） |
-| `draft_response_outline` | 为每条审稿意见生成结构化回复提纲 | 是（可选） |
-
-## 安装
-
-### Linux / macOS
+### 1️⃣ 安装
 
 ```bash
 cd cheap-agent
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env
-# 编辑 .env 设置你的 WORKSPACE_ROOT 和 LLM 配置
 ```
 
-### Windows PowerShell
-
-```powershell
-cd cheap-agent
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-# 编辑 .env 设置你的 WORKSPACE_ROOT 和 LLM 配置
-```
-
-## 配置 `.env`
+### 2️⃣ 配置 `.env`
 
 ```env
-# 允许读取的项目根目录
-WORKSPACE_ROOT=/path/to/your/project
+# OpenAI-compatible API
+LLM_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
+LLM_API_KEY=your-key-here
+LLM_MODEL=mimo-v2.5-pro
 
-# OpenAI-compatible API（Ollama / DeepSeek / OpenRouter / vLLM 等）
-LLM_BASE_URL=http://127.0.0.1:11434/v1
-LLM_API_KEY=ollama
-LLM_MODEL=qwen2.5-coder:7b
-
-# 截断限制
-MAX_FILE_CHARS=8000
-MAX_OUTPUT_CHARS=6000
-
-# 本地搜索/扫描限制
-MAX_SCAN_FILE_SIZE_BYTES=2097152
-MAX_SEARCH_RESULTS=50
-MAX_CONTEXT_LINES=200
-
-# MCP transport: stdio 或 streamable-http
-MCP_TRANSPORT=stdio
-MCP_HOST=127.0.0.1
-MCP_PORT=8000
-MCP_PATH=/mcp
+# 工具 Profile（可选：minimal / code / paper / full / safe / debug）
+MCP_PROFILE=full
 ```
 
-## 本地测试
+### 3️⃣ 接入 MCP Client
 
-```bash
-python test_stdio.py
-```
-
-会依次检查：配置加载、WORKSPACE_ROOT 存在、LLM 调用、文件审查逻辑。
-
-## 启动 MCP Server
-
-### stdio 模式（默认）
-
-```bash
-python server.py
-```
-
-运行后没有输出是正常的——MCP Server 通过 stdin/stdout 与 Client 通信。
-
-### HTTP 模式（可选）
-
-修改 `.env`：
-
-```env
-MCP_TRANSPORT=streamable-http
-MCP_PORT=8000
-```
-
-然后：
-
-```bash
-python server.py
-```
-
-> 注意：不要将 HTTP MCP 暴露到公网。建议仅绑定 `127.0.0.1`。
-
-## Codex MCP 配置
-
-### Linux / macOS
-
-在 `~/.codex/config.toml` 中添加：
+**Codex** — 编辑 `~/.codex/config.toml`：
 
 ```toml
-[mcp_servers.local_code_agent]
-command = "/absolute/path/to/cheap-agent/.venv/bin/python"
-args = ["/absolute/path/to/cheap-agent/server.py"]
-startup_timeout_sec = 30
-tool_timeout_sec = 600
-default_tools_approval_mode = "prompt"
+[mcp_servers.cheap_agent]
+command = "/path/to/cheap-agent/.venv/bin/python"
+args = ["/path/to/cheap-agent/server.py"]
 ```
 
-### Windows
+**Claude Code** — 运行：
 
-```toml
-[mcp_servers.local_code_agent]
-command = "C:\\absolute\\path\\to\\cheap-agent\\.venv\\Scripts\\python.exe"
-args = ["C:\\absolute\\path\\to\\cheap-agent\\server.py"]
-startup_timeout_sec = 30
-tool_timeout_sec = 600
-default_tools_approval_mode = "prompt"
+```bash
+claude mcp add cheap-agent -- /path/to/cheap-agent/.venv/bin/python /path/to/cheap-agent/server.py
 ```
 
-## Codex 自定义指令建议
+### 4️⃣ 测试
 
-将以下内容加入项目的 `AGENTS.md`：
-
-```text
-本项目配置了 local_code_agent MCP 工具。遇到报错分析、文件审查、相关文件定位、
-测试思路生成、项目结构理解等任务时，可以优先调用该 MCP 工具获取初步分析。
-但该工具只是辅助分析者，不是最终决策者。不要让它修改文件，不要完全相信它的结论。
-最终判断和代码修改由 Codex 自己完成。
+```bash
+python -m pytest tests/ -v --ignore=tests/test_integration.py
 ```
 
-## 使用示例
+---
 
-在 Codex 中，你可以直接使用：
+## 🧰 工具总览
 
-### LLM 分析工具
+> 共 **74 个工具**，全部只读，支持 `use_llm=False` 纯规则模式
 
-- `review_file(file_path="src/train.py")` — 审查训练脚本
-- `analyze_error_log(error_log="...")` — 分析报错
-- `find_related_files(task="找出数据加载相关代码", keyword="data")` — 定位相关文件
-- `generate_test_ideas(file_path="src/model.py")` — 生成测试思路
-- `summarize_project()` — 了解项目结构
+### 🔧 代码辅助（35 个）
 
-### 本地读取工具（快速，不调用 LLM）
+<details>
+<summary><b>📂 代码读取</b></summary>
 
-- `read_file_around_line(file_path="src/train.py", line_number=158)` — 读取报错行附近代码
-- `extract_symbols(file_path="src/model.py")` — 提取函数、类、import 结构
-- `search_code(query="calculate_param")` — 搜索关键词在项目中的位置
-- `search_code(query="TODO", file_glob="*.py")` — 只在 Python 文件中搜索 TODO
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `read_file_around_line` | 读取指定行附近代码 | ❌ |
+| `extract_symbols` | 提取函数/类/import 结构 | ❌ |
+| `search_code` | 关键词搜索项目文件 | ❌ |
+| `find_related_files` | 根据任务找相关文件 | ✅ |
 
-### 项目理解工具
+</details>
 
-- `build_project_map()` — 生成项目结构地图，包含目录、入口、配置分类
-- `summarize_file(file_path="src/train.py")` — 总结文件作用和关键符号
-- `summarize_directory(dir_path="models/")` — 总结目录职责和重要文件
-- `detect_project_profile()` — 判断项目类型、技术栈、建议阅读顺序
-- `summarize_file(file_path="src/train.py", use_llm=False)` — 只用规则摘要，不调用 LLM
+<details>
+<summary><b>🗺️ 项目理解</b></summary>
 
-### 错误诊断工具
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `build_project_map` | 项目结构地图 | ❌ |
+| `summarize_file` | 单文件摘要 | ✅ |
+| `summarize_directory` | 目录摘要 | ✅ |
+| `detect_project_profile` | 项目类型检测 | ❌ |
+| `build_project_profile_v2` | 完整项目画像 | ✅ |
+| `get_codex_onboarding_pack` | 启动上下文包 | ❌ |
+| `infer_project_runbook` | 运行手册推断 | ✅ |
+| `recommend_workflow_for_task` | 任务工具推荐 | ❌ |
+| `explain_project_conventions` | 项目约定总结 | ✅ |
 
-- `analyze_traceback_with_context(error_log="Traceback...")` — 解析 traceback 并读取相关代码上下文
-- `analyze_traceback_with_context(error_log="...", use_llm=False)` — 只用规则分析，不调用 LLM
-- `diagnose_import_error(error_log="ModuleNotFoundError...")` — 诊断导入错误
-- `diagnose_training_error(error_log="CUDA out of memory...")` — 诊断训练错误
-- `diagnose_training_error(error_log="...", project_hint="YOLO project using ultralytics")` — 带项目上下文诊断
-- `suggest_debug_steps(problem_description="训练时 loss 为 NaN")` — 生成调试计划
+</details>
 
-### 测试和验证工具
+<details>
+<summary><b>🐛 错误诊断</b></summary>
 
-- `suggest_minimal_repro(problem_description="forward 报错")` — 生成最小复现方案
-- `suggest_minimal_repro(problem_description="...", related_file="src/model.py")` — 带相关文件的复现方案
-- `generate_unit_test_plan(file_path="src/utils.py")` — 为文件生成测试计划
-- `generate_unit_test_plan(file_path="src/utils.py", target_symbol="calculate_param")` — 为特定函数生成测试计划
-- `check_config_consistency()` — 检查配置文件一致性
-- `check_config_consistency(config_path=".env.example")` — 检查特定配置文件
-- `suggest_validation_plan(task_description="修改了训练脚本")` — 生成验证计划
-- `suggest_validation_plan(task_description="...", changed_files="src/train.py\nconfig.py")` — 带修改文件的验证计划
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `analyze_traceback_with_context` | Traceback + 代码上下文分析 | ✅ |
+| `diagnose_import_error` | 导入错误诊断 | ✅ |
+| `diagnose_training_error` | CUDA OOM / shape mismatch 等 | ✅ |
+| `suggest_debug_steps` | 调试计划生成 | ✅ |
 
-### 代码审查工具
+</details>
 
-- `risk_check_before_edit(task_description="修改训练脚本", target_files="src/train.py")` — 修改前风险分析
-- `review_diff(diff_text="diff --git a/...")` — 审查 diff
-- `post_edit_review(task_description="修复 bug", changed_files="src/model.py")` — 修改后审查
-- `post_edit_review(task_description="...", changed_files="src/model.py", diff_text="...")` — 带 diff 的修改后审查
-- `analyze_change_impact(task_description="修改了函数签名", target_files="src/utils.py")` — 分析影响范围
+<details>
+<summary><b>🧪 测试验证</b></summary>
 
-### 缓存和记忆工具
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `suggest_minimal_repro` | 最小复现方案 | ✅ |
+| `generate_unit_test_plan` | 单元测试计划 | ✅ |
+| `check_config_consistency` | 配置一致性检查 | ✅ |
+| `suggest_validation_plan` | 验证计划 | ✅ |
 
-- `cache_status()` — 查看当前 MCP 缓存状态
-- `rebuild_project_index()` — 强制重建项目文件索引
-- `get_cached_project_context()` — 快速获取缓存中的项目上下文
-- `export_perf_report()` — 分析哪些 MCP 工具最慢
-- `clear_cache()` — 只清理过期缓存
-- `clear_cache(namespace="all")` — 清理全部缓存
-- `clear_cache(namespace="tool_results")` — 清理指定命名空间
+</details>
 
-### 项目画像与启动上下文工具
+<details>
+<summary><b>🔍 代码审查</b></summary>
 
-- `get_codex_onboarding_pack()` — 快速获取当前项目启动上下文
-- `get_codex_onboarding_pack(task_description="修复训练报错")` — 带任务的启动上下文
-- `build_project_profile_v2()` — 生成完整项目画像
-- `infer_project_runbook()` — 推断项目安装、启动和测试流程
-- `recommend_workflow_for_task(task_description="修复训练报错")` — 推荐工具调用顺序
-- `explain_project_conventions()` — 总结项目开发约定
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `review_file` | 代码质量审查 | ✅ |
+| `review_diff` | Diff 审查 | ✅ |
+| `risk_check_before_edit` | 修改前风险分析 | ✅ |
+| `post_edit_review` | 修改后审查 | ✅ |
+| `analyze_change_impact` | 影响范围分析 | ✅ |
 
-### 论文辅助工具
+</details>
 
-- `detect_paper_project()` — 判断当前项目是否是论文项目
-- `build_paper_map()` — 生成论文项目地图
-- `summarize_latex_structure()` — 总结论文结构
-- `find_paper_sections(query="method")` — 查找 Method 章节位置
-- `review_paper_structure()` — 检查论文结构是否完整
-- `check_claim_evidence()` — 检查强 claim 是否有 evidence 支撑
-- `parse_bib_file()` — 解析 refs.bib
-- `check_citation_coverage()` — 检查正文引用和 bib 是否一致
+### 📝 论文辅助（39 个）
 
-### 论文实验结果与表格核对工具
+<details>
+<summary><b>📄 论文结构</b></summary>
 
-- `parse_latex_tables()` — 解析当前论文中的实验表格
-- `parse_latex_tables(tex_path="sections/experiments.tex")` — 解析指定文件中的表格
-- `extract_experiment_claims()` — 提取实验章节中的性能 claim
-- `check_result_claim_consistency()` — 检查正文和表格结果是否一致
-- `check_ablation_logic()` — 检查消融实验是否支撑方法模块
-- `check_metric_consistency()` — 检查 mAP、AP50、FPS 等指标格式是否统一
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `detect_paper_project` | 检测论文项目 | ❌ |
+| `build_paper_map` | 论文项目地图 | ❌ |
+| `summarize_latex_structure` | LaTeX 结构总结 | ✅ |
+| `find_paper_sections` | 章节查找 | ❌ |
+| `review_paper_structure` | 结构完整性检查 | ✅ |
+| `check_claim_evidence` | Claim-Evidence 检查 | ✅ |
 
-### 论文语言与 IEEE 风格审查工具
+</details>
 
-- `review_academic_paragraph(paragraph="...")` — 审查单段学术表达质量
-- `check_abstract_quality()` — 检查当前论文摘要是否完整
-- `check_introduction_logic()` — 检查 Introduction 逻辑链是否自然
-- `check_contribution_clarity()` — 检查贡献点是否具体且有实验支撑
-- `check_term_consistency(terms_hint="SCD-DINO, Soft Top-K, scatter descriptor")` — 检查术语是否统一
-- `check_ieee_style()` — 检查全文 IEEE/TGRS 风格问题
+<details>
+<summary><b>📊 实验核对</b></summary>
 
-### 图表、Caption 与正文引用一致性审查工具
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `parse_latex_tables` | LaTeX 表格解析 | ❌ |
+| `extract_experiment_claims` | 实验 Claim 提取 | ✅ |
+| `check_result_claim_consistency` | 正文-表格一致性 | ✅ |
+| `check_ablation_logic` | 消融实验完整性 | ✅ |
+| `check_metric_consistency` | 指标格式统一性 | ❌ |
 
-- `parse_figures_and_labels()` — 解析当前论文中的图表、公式和 label
-- `check_figure_reference_consistency()` — 检查是否有未定义引用、未引用图表或缺失图文件
-- `review_figure_caption(label="fig:query_refinement")` — 审查指定图注是否清楚
-- `review_table_caption(label="tab:main_results")` — 审查指定表注是否完整
-- `check_caption_text_consistency()` — 检查正文对图表的描述是否和 caption 一致
-- `check_equation_reference_consistency()` — 检查公式引用和符号解释是否一致
+</details>
 
-### Related Work 与参考文献增强工具
+<details>
+<summary><b>✍️ 写作审查</b></summary>
 
-- `group_references_by_topic()` — 将 refs.bib 按主题分组
-- `check_related_work_coverage()` — 检查 Related Work 是否覆盖所需研究方向
-- `check_reference_recency()` — 检查参考文献是否过旧
-- `check_bibtex_quality()` — 检查 refs.bib 是否有字段缺失或格式问题
-- `suggest_citation_positions()` — 检查 Introduction 和 Related Work 中哪些句子可能需要引用
-- `build_related_work_outline()` — 生成 Related Work 的扩写提纲
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `review_academic_paragraph` | 段落表达质量 | ✅ |
+| `check_abstract_quality` | 摘要完整性 | ✅ |
+| `check_introduction_logic` | Introduction 逻辑链 | ✅ |
+| `check_contribution_clarity` | 贡献点清晰度 | ✅ |
+| `check_term_consistency` | 术语一致性 | ✅ |
+| `check_ieee_style` | IEEE/TGRS 风格 | ✅ |
 
-### 审稿意见与 Rebuttal / Response 辅助工具
+</details>
 
-- `parse_reviewer_comments(comments_text="...")` — 解析审稿意见
-- `group_reviewer_concerns(comments_text="...")` — 找出审稿人共同关注的高优先级问题
-- `map_comments_to_revisions(comments_text="...")` — 将审稿意见映射到需要修改的论文章节
-- `check_response_completeness(comments_text="...", response_text="...")` — 检查 response 是否完整回应
-- `review_response_tone(response_text="...")` — 检查回复语气是否专业克制
-- `draft_response_outline(comments_text="...")` — 为每条审稿意见生成 response outline
+<details>
+<summary><b>🖼️ 图表引用</b></summary>
 
-## Tool Profiles and Feature Switches
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `parse_figures_and_labels` | 图表/公式/Label 解析 | ❌ |
+| `check_figure_reference_consistency` | 引用一致性检查 | ❌ |
+| `review_figure_caption` | Figure Caption 审查 | ✅ |
+| `review_table_caption` | Table Caption 审查 | ✅ |
+| `check_caption_text_consistency` | Caption-正文一致性 | ✅ |
+| `check_equation_reference_consistency` | 公式引用一致性 | ✅ |
 
-### Profile 说明
+</details>
 
-| Profile | 用途 | 工具数量 |
-|---------|------|---------|
-| `minimal` | 最小工具集合，适合快速启动 | ~10 |
-| `code` | 代码理解、调试、测试建议和代码审查 | ~35 |
-| `paper` | 论文结构、实验核对、引用检查、图表检查、写作审查和 rebuttal 辅助 | ~40 |
-| `full` | 启用所有工具，适合个人完整使用 | 全部 |
-| `safe` | 只启用最安全、纯规则、低风险工具 | ~15 |
-| `debug` | 用于 MCP 自检、缓存、性能和工具路由调试 | ~5 |
+<details>
+<summary><b>📚 参考文献</b></summary>
 
-### .env 配置示例
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `parse_bib_file` | BibTeX 解析 | ❌ |
+| `check_citation_coverage` | 引用覆盖检查 | ❌ |
+| `group_references_by_topic` | 参考文献主题分组 | ✅ |
+| `check_related_work_coverage` | Related Work 覆盖度 | ✅ |
+| `check_reference_recency` | 文献年份检查 | ❌ |
+| `check_bibtex_quality` | BibTeX 质量检查 | ❌ |
+| `suggest_citation_positions` | 补引用位置建议 | ✅ |
+| `build_related_work_outline` | Related Work 提纲 | ✅ |
+
+</details>
+
+<details>
+<summary><b>📬 审稿回复</b></summary>
+
+| 工具 | 说明 | LLM |
+|:-----|:-----|:----|
+| `parse_reviewer_comments` | 审稿意见解析 | ✅ |
+| `group_reviewer_concerns` | 问题聚类 | ✅ |
+| `map_comments_to_revisions` | 意见→修改位置映射 | ✅ |
+| `check_response_completeness` | Response 完整性 | ✅ |
+| `review_response_tone` | Response 语气审查 | ✅ |
+| `draft_response_outline` | Response 提纲生成 | ✅ |
+
+</details>
+
+---
+
+## 🎛️ 工具 Profile 系统
+
+通过 `MCP_PROFILE` 控制启用哪些工具，避免工具列表过长：
+
+| Profile | 工具数 | 适用场景 |
+|:--------|:------|:---------|
+| `minimal` | ~10 | ⚡ 快速启动、低开销 |
+| `code` | ~35 | 💻 代码开发和调试 |
+| `paper` | ~44 | 📝 论文写作和投稿 |
+| `full` | 74 | 🔓 全部工具（默认） |
+| `safe` | ~15 | 🛡️ 只有纯规则、低风险工具 |
+| `debug` | ~5 | 🔧 MCP 自检和性能调试 |
 
 ```env
-# 切换 profile
+# 示例：只启用论文相关工具
 MCP_PROFILE=paper
-
-# 全局功能开关
-ENABLE_CODE_TOOLS=false
-ENABLE_PAPER_TOOLS=true
-ENABLE_CACHE_TOOLS=true
-ENABLE_META_TOOLS=true
-
-# 论文工具子类开关
-ENABLE_PAPER_EXPERIMENT_TOOLS=true
-ENABLE_PAPER_WRITING_TOOLS=true
-ENABLE_PAPER_FIGURE_TOOLS=true
-ENABLE_PAPER_REBUTTAL_TOOLS=true
-
-# 安全开关
-ENABLE_ONLY_READ_TOOLS=true
-DISABLE_ALL_WRITE_TOOLS=true
-DISABLE_SHELL_TOOLS=true
 ```
 
-### Codex 使用示例
+### 📊 元工具
 
-- `show_active_profile()` — 查看当前 MCP profile 和启用的工具组
-- `list_available_tools()` — 列出当前可用工具
-- `explain_tool_routing(task_description="检查论文实验 claim 是否被表格支撑")` — 推荐应该调用哪些工具
+| 工具 | 说明 |
+|:-----|:-----|
+| `show_active_profile` | 查看当前 Profile 和启用的工具组 |
+| `list_available_tools` | 列出当前可用工具 |
+| `explain_tool_routing` | 根据任务推荐工具调用顺序 |
 
-## 安全说明
+---
 
-- **只读**：不提供写文件、删除文件功能
-- **无 shell**：不暴露任意命令执行能力
-- **路径限制**：所有文件访问限制在 `WORKSPACE_ROOT` 内，越界路径会被拒绝
-- **无外部智能体**：不调用 opencode、mimo-code、codex CLI 等
-- **HTTP 安全**：如果启用 HTTP transport，建议仅绑定 `127.0.0.1`，不要暴露到公网
+## ⚡ 性能
 
-## 项目结构
+| 工具类型 | 典型延迟 | 说明 |
+|:---------|:---------|:-----|
+| 🟢 纯规则工具 | < 1s | `search_code`、`parse_bib_file` 等 |
+| 🟡 LLM 工具 | 5-30s | 取决于模型和输入长度 |
+| 🔵 缓存命中 | < 0.5s | 重复调用自动走缓存 |
+
+---
+
+## 📁 项目结构
 
 ```
 cheap-agent/
-├── README.md              # 项目文档
-├── requirements.txt       # Python 依赖
-├── .env.example           # 环境变量模板
-├── server.py              # MCP Server 入口
-├── cheap_agent/           # 主包
-│   ├── __init__.py
-│   ├── config.py          # 配置加载
-│   ├── llm_client.py      # OpenAI-compatible LLM 调用
-│   ├── workspace.py       # 安全文件读取与路径工具
-│   ├── cache.py           # 内存缓存系统
-│   ├── cache_manager.py   # 磁盘缓存管理
-│   ├── parsers/           # 文档解析器
-│   │   ├── latex_parser.py
-│   │   └── bib_parser.py
-│   ├── prompts/           # 提示词模板
-│   │   ├── base.py        # 基础编码提示词
-│   │   └── paper.py       # 论文分析提示词
-│   ├── tool_registry.py # 工具元信息注册表
-│   ├── profiles.py      # Profile 管理和功能开关
-│   └── tools/             # MCP 工具业务逻辑
-│       ├── code.py        # LLM 分析工具
-│       ├── reading.py     # 本地读取工具
-│       ├── project.py     # 项目理解工具
-│       ├── diagnostics.py # 错误诊断工具
-│       ├── testing.py     # 测试验证工具
-│       ├── review.py      # 代码审查工具
-│       ├── cache_tools.py # 缓存管理工具
-│       ├── profile.py     # 项目画像工具
-│       ├── meta.py        # 元工具（profile/工具列表/路由）
-│       ├── paper.py       # 论文结构工具
-│       ├── experiments.py # 实验核对工具
-│       ├── writing.py     # 写作审查工具
-│       ├── figures.py     # 图表一致性工具
-│       ├── related_work.py # 参考文献工具
-│       └── rebuttal.py    # 审稿回复工具
-└── tests/                 # 测试文件
-    ├── test_stdio.py
-    ├── test_reading.py
-    ├── test_project.py
-    ├── test_diagnostics.py
-    ├── test_testing.py
-    ├── test_review.py
-    ├── test_cache.py
-    ├── test_profile.py
-    └── test_paper.py
+├── server.py              # 🚀 MCP Server 入口
+├── config.py              # ⚙️ 配置加载
+├── tool_registry.py       # 📋 工具元信息注册表
+├── profiles.py            # 🎛️ Profile 管理
+├── workspace.py           # 📁 安全文件读取
+├── llm_client.py          # 🤖 LLM 调用
+├── cache.py               # 💾 内存缓存
+├── cache_manager.py       # 💿 磁盘缓存
+├── parsers/               # 📖 LaTeX/BibTeX 解析
+├── prompts/               # 📝 提示词模板
+└── tools/                 # 🧰 20 个工具模块
+    ├── code.py            #   代码分析
+    ├── reading.py         #   文件读取
+    ├── project.py         #   项目理解
+    ├── diagnostics.py     #   错误诊断
+    ├── testing.py         #   测试验证
+    ├── review.py          #   代码审查
+    ├── cache_tools.py     #   缓存管理
+    ├── profile.py         #   项目画像
+    ├── meta.py            #   元工具
+    ├── paper.py           #   论文结构
+    ├── experiments.py     #   实验核对
+    ├── writing.py         #   写作审查
+    ├── figures.py         #   图表引用
+    ├── related_work.py    #   参考文献
+    └── rebuttal.py        #   审稿回复
 ```
+
+---
+
+## 🤝 贡献
+
+欢迎 PR！请确保：
+
+- [ ] 新工具是只读的
+- [ ] 不执行 shell 命令
+- [ ] 路径限制在 `WORKSPACE_ROOT` 内
+- [ ] 添加到 `tool_registry.py` 并标注 profile
+- [ ] 添加测试到 `tests/`
+
+---
+
+<div align="center">
+
+**Made with ❤️ for researchers and developers**
+
+</div>
