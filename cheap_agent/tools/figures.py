@@ -3,6 +3,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
@@ -33,11 +34,6 @@ from cheap_agent.parsers.latex_parser import (
 )
 from cheap_agent.workspace import resolve_safe_path, get_relative_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _paper_cache_dir() -> Path:
@@ -304,7 +300,7 @@ def parse_figures_and_labels_logic(
         cache_dir = _paper_cache_dir()
         write_json_cache_atomic(cache_dir / "latex_figures.json", {"value": result})
 
-    return _truncate(result, MAX_FIGURE_OUTPUT_CHARS)
+    return truncate(result, MAX_FIGURE_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -441,7 +437,7 @@ def check_figure_reference_consistency_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_FIGURE_OUTPUT_CHARS)
+    return truncate(result, MAX_FIGURE_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -526,7 +522,7 @@ def review_figure_caption_logic(
             parts.append(f"  Source: {r['source']}")
             parts.append(f"  Caption: {r['caption'][:150]}")
             parts.append("")
-        return _truncate("\n".join(parts), MAX_FIGURE_OUTPUT_CHARS)
+        return truncate("\n".join(parts), MAX_FIGURE_OUTPUT_CHARS)
     else:
         return "[Error] Provide caption_text, label, or tex_path."
 
@@ -583,7 +579,7 @@ def review_figure_caption_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_FIGURE_OUTPUT_CHARS)
+    return truncate(result, MAX_FIGURE_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -653,7 +649,7 @@ def review_table_caption_logic(
             parts.append(f"  Source: {r['source']}")
             parts.append(f"  Caption: {r['caption'][:150]}")
             parts.append("")
-        return _truncate("\n".join(parts), MAX_FIGURE_OUTPUT_CHARS)
+        return truncate("\n".join(parts), MAX_FIGURE_OUTPUT_CHARS)
     else:
         return "[Error] Provide caption_text, label, or tex_path."
 
@@ -702,7 +698,7 @@ def review_table_caption_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_FIGURE_OUTPUT_CHARS)
+    return truncate(result, MAX_FIGURE_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -800,7 +796,7 @@ def check_caption_text_consistency_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_FIGURE_OUTPUT_CHARS)
+    return truncate(result, MAX_FIGURE_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -930,4 +926,4 @@ def check_equation_reference_consistency_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_FIGURE_OUTPUT_CHARS)
+    return truncate(result, MAX_FIGURE_OUTPUT_CHARS)

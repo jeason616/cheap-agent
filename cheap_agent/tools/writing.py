@@ -3,6 +3,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
@@ -35,11 +36,6 @@ from cheap_agent.parsers.latex_parser import (
 )
 from cheap_agent.workspace import resolve_safe_path, get_relative_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _paper_cache_dir() -> Path:
@@ -219,7 +215,7 @@ def review_academic_paragraph_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_WRITING_OUTPUT_CHARS)
+    return truncate(result, MAX_WRITING_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -308,7 +304,7 @@ def check_abstract_quality_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_WRITING_OUTPUT_CHARS)
+    return truncate(result, MAX_WRITING_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -409,7 +405,7 @@ def check_introduction_logic_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_WRITING_OUTPUT_CHARS)
+    return truncate(result, MAX_WRITING_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -540,7 +536,7 @@ def check_contribution_clarity_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_WRITING_OUTPUT_CHARS)
+    return truncate(result, MAX_WRITING_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -682,7 +678,7 @@ def check_term_consistency_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_WRITING_OUTPUT_CHARS)
+    return truncate(result, MAX_WRITING_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -830,4 +826,4 @@ def check_ieee_style_logic(
     if llm_result:
         result += f"\n\nLLM Review:\n{llm_result}"
 
-    return _truncate(result, MAX_WRITING_OUTPUT_CHARS)
+    return truncate(result, MAX_WRITING_OUTPUT_CHARS)

@@ -2,6 +2,7 @@ import re
 import sys
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import get_cache, make_hash, set_cache
 from cheap_agent.config import (
     ENABLE_LLM_REVIEW,
@@ -18,11 +19,6 @@ from cheap_agent.config import (
 )
 from cheap_agent.workspace import get_project_files_cached, get_relative_path, resolve_safe_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 _SECRET_PATTERNS = [
@@ -257,7 +253,7 @@ def review_diff_logic(
     if ENABLE_REVIEW_CACHE:
         set_cache(cache_key, result, REVIEW_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -353,7 +349,7 @@ def risk_check_before_edit_logic(
     if ENABLE_REVIEW_CACHE:
         set_cache(cache_key, result, REVIEW_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _detect_affected_areas(task: str, files: list[str]) -> list[str]:
@@ -535,7 +531,7 @@ def post_edit_review_logic(
     if ENABLE_REVIEW_CACHE:
         set_cache(cache_key, result, REVIEW_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _assess_task_coverage(task: str, files: list[str]) -> str:
@@ -670,7 +666,7 @@ def analyze_change_impact_logic(
     if ENABLE_REVIEW_CACHE:
         set_cache(cache_key, result, REVIEW_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _detect_impact_areas(task: str, files: list[str], symbols: list[str]) -> list[str]:

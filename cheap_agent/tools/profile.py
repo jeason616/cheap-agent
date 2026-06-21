@@ -4,6 +4,7 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
@@ -30,11 +31,6 @@ from cheap_agent.config import (
 )
 from cheap_agent.workspace import get_file_index_cached, get_file_index_version, get_relative_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _safe_read_file(path: str, max_chars: int = 3000) -> str:
@@ -169,7 +165,7 @@ def build_project_profile_v2_logic(
         write_json_cache_atomic(cache_dir / "project_profile_v2.json", {"value": result, "cache_key": cache_key})
         set_disk_cache("project_profile_v2", cache_key, result, ttl_sec=PROJECT_PROFILE_V2_CACHE_TTL_SEC, tool="build_project_profile_v2")
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _detect_main_language(ext_stats: dict) -> str:
@@ -488,7 +484,7 @@ def get_codex_onboarding_pack_logic(
     if ENABLE_ONBOARDING_PACK_CACHE:
         set_disk_cache("onboarding_packs", cache_key, result, ttl_sec=ONBOARDING_PACK_CACHE_TTL_SEC, tool="get_codex_onboarding_pack")
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -585,7 +581,7 @@ def infer_project_runbook_logic(
     if ENABLE_RUNBOOK_CACHE:
         set_disk_cache("runbook", cache_key, result, ttl_sec=RUNBOOK_CACHE_TTL_SEC, tool="infer_project_runbook")
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -690,7 +686,7 @@ def recommend_workflow_for_task_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _get_relevant_files_for_task(task_type: str) -> list[str]:
@@ -824,4 +820,4 @@ def explain_project_conventions_logic(
     if ENABLE_CONVENTIONS_CACHE:
         set_disk_cache("conventions", cache_key, result, ttl_sec=CONVENTIONS_CACHE_TTL_SEC, tool="explain_project_conventions")
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)

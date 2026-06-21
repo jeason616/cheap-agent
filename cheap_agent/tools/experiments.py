@@ -3,6 +3,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
@@ -31,11 +32,6 @@ from cheap_agent.parsers.latex_parser import (
 )
 from cheap_agent.workspace import resolve_safe_path, get_relative_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _paper_cache_dir() -> Path:
@@ -281,7 +277,7 @@ def parse_latex_tables_detailed(
         cache_dir = _paper_cache_dir()
         write_json_cache_atomic(cache_dir / "paper_tables.json", {"value": result, "tables_count": len(all_tables)})
 
-    return _truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
+    return truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -431,7 +427,7 @@ def extract_experiment_claims_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
+    return truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -532,7 +528,7 @@ def check_result_claim_consistency_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
+    return truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
 
 
 def _extract_table_data_from_result(result: str) -> list[dict]:
@@ -692,7 +688,7 @@ def check_ablation_logic_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
+    return truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -845,4 +841,4 @@ def check_metric_consistency_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)
+    return truncate(result, MAX_EXPERIMENT_OUTPUT_CHARS)

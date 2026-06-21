@@ -4,6 +4,7 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import get_cache, make_hash, set_cache
 from cheap_agent.config import (
     ENABLE_LLM_FILE_SUMMARY,
@@ -36,11 +37,6 @@ CONFIG_PATTERNS = ["config", "configs", "conf", "cfg", "settings"]
 TEST_PATTERNS = ["test", "tests", "spec", "specs"]
 DOC_PATTERNS = ["doc", "docs", "documentation"]
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _file_mtime_size(path: Path) -> tuple[float, int]:
@@ -223,7 +219,7 @@ def build_project_map_logic(
     for i, f in enumerate(suggested[:10], 1):
         parts.append(f"  {i}. {f}")
 
-    result = _truncate("\n".join(parts), MAX_OUTPUT_CHARS)
+    result = truncate("\n".join(parts), MAX_OUTPUT_CHARS)
 
     if ENABLE_PROJECT_MAP_CACHE:
         set_cache(cache_key, result, PROJECT_MAP_CACHE_TTL_SEC)
@@ -303,7 +299,7 @@ def summarize_file_logic(
 
     if not use_llm or not ENABLE_LLM_FILE_SUMMARY:
         set_cache(cache_key, rule_result)
-        return _truncate(rule_result, MAX_OUTPUT_CHARS)
+        return truncate(rule_result, MAX_OUTPUT_CHARS)
 
     try:
         from cheap_agent.llm_client import ask_llm
@@ -316,7 +312,7 @@ def summarize_file_logic(
         final = rule_result + f"\n\n[LLM Error] {e}"
 
     set_cache(cache_key, final)
-    return _truncate(final, MAX_OUTPUT_CHARS)
+    return truncate(final, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -434,7 +430,7 @@ def summarize_directory_logic(
 
     parts.append(f"Notes for Codex: explore {rel_dir}/ to understand its structure")
 
-    result = _truncate("\n".join(parts), MAX_OUTPUT_CHARS)
+    result = truncate("\n".join(parts), MAX_OUTPUT_CHARS)
 
     if use_llm and ENABLE_LLM_FILE_SUMMARY:
         try:
@@ -447,7 +443,7 @@ def summarize_directory_logic(
             result = result + f"\n\n[LLM Error] {e}"
 
     set_cache(cache_key, result)
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -644,4 +640,4 @@ def detect_project_profile_logic(
             result = result + f"\n\n[LLM Error] {e}"
 
     set_cache(cache_key, result)
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)

@@ -4,6 +4,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
@@ -50,11 +51,6 @@ from cheap_agent.parsers.bib_parser import (
     summarize_bib_entries,
 )
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _paper_cache_dir() -> Path:
@@ -293,7 +289,7 @@ def build_paper_map_logic(
         cache_dir = _paper_cache_dir()
         write_json_cache_atomic(cache_dir / "paper_map.json", {"value": result, "main_file": main_file})
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -389,7 +385,7 @@ def summarize_latex_structure_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -587,7 +583,7 @@ def review_paper_structure_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -714,7 +710,7 @@ def check_claim_evidence_logic(
         except Exception as e:
             result = result + f"\n\n[LLM Error] {e}"
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------

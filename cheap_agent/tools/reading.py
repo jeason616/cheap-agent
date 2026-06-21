@@ -4,14 +4,10 @@ import re
 import sys
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.config import MAX_CONTEXT_LINES, MAX_OUTPUT_CHARS, MAX_SEARCH_RESULTS, WORKSPACE_ROOT
 from cheap_agent.workspace import get_project_files_cached, get_relative_path, is_allowed_text_file, is_skipped_dir, resolve_safe_path, MAX_FILE_SIZE
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +53,7 @@ def read_file_around_line_logic(
         prefix = ">> " if lineno == line_number else "   "
         output_lines.append(f"{prefix}{lineno:>{width}} | {lines[i]}")
 
-    return _truncate("\n".join(output_lines), MAX_OUTPUT_CHARS)
+    return truncate("\n".join(output_lines), MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -139,7 +135,7 @@ def _extract_python_symbols(target: Path) -> str:
     else:
         parts.append("Main entry: not found")
 
-    return _truncate("\n".join(parts), MAX_OUTPUT_CHARS)
+    return truncate("\n".join(parts), MAX_OUTPUT_CHARS)
 
 
 def _extract_generic_symbols(target: Path) -> str:
@@ -197,7 +193,7 @@ def _extract_generic_symbols(target: Path) -> str:
         parts.extend(items[:50]) if items else parts.append("- (none)")
         parts.append("")
 
-    return _truncate("\n".join(parts), MAX_OUTPUT_CHARS)
+    return truncate("\n".join(parts), MAX_OUTPUT_CHARS)
 
 
 def extract_symbols_logic(file_path: str) -> str:
@@ -294,4 +290,4 @@ def search_code_logic(
     header = f"Search query: {query}\nScanned files: {scanned}\nResults: {len(results)}\n"
     if not results:
         return header + "\n(no matches found)"
-    return _truncate(header + "\n" + "\n\n".join(results), MAX_OUTPUT_CHARS)
+    return truncate(header + "\n" + "\n\n".join(results), MAX_OUTPUT_CHARS)

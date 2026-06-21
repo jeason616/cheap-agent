@@ -2,6 +2,7 @@ import re
 import sys
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import get_cache, make_hash, set_cache
 from cheap_agent.config import (
     DIAGNOSTIC_CACHE_TTL_SEC,
@@ -15,11 +16,6 @@ from cheap_agent.config import (
 )
 from cheap_agent.workspace import get_relative_path, resolve_safe_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _is_in_workspace(filepath: str) -> bool:
@@ -208,7 +204,7 @@ def analyze_traceback_with_context_logic(
     if ENABLE_DIAGNOSTIC_CACHE:
         set_cache(cache_key, result, DIAGNOSTIC_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _rule_diagnose_traceback(parsed: dict) -> str:
@@ -383,7 +379,7 @@ def diagnose_import_error_logic(
     if ENABLE_DIAGNOSTIC_CACHE:
         set_cache(cache_key, result, DIAGNOSTIC_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _rule_diagnose_import(kind: str, module: str, project_matches: list[str], dep_files: list[str]) -> list[str]:
@@ -576,7 +572,7 @@ def diagnose_training_error_logic(
     if ENABLE_DIAGNOSTIC_CACHE:
         set_cache(cache_key, result, DIAGNOSTIC_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -670,7 +666,7 @@ def suggest_debug_steps_logic(
     if ENABLE_DIAGNOSTIC_CACHE:
         set_cache(cache_key, result, DIAGNOSTIC_CACHE_TTL_SEC)
 
-    return _truncate(result, MAX_OUTPUT_CHARS)
+    return truncate(result, MAX_OUTPUT_CHARS)
 
 
 def _generate_debug_steps(area: str, problem: str, error_log: str) -> list[str]:

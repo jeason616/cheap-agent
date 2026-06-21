@@ -15,11 +15,6 @@ from cheap_agent.config import ENABLE_DISK_CACHE, PERF_LOG_MAX_ENTRIES, WORKSPAC
 from cheap_agent.workspace import get_relative_path
 
 
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
-
 
 # ---------------------------------------------------------------------------
 # cache_status

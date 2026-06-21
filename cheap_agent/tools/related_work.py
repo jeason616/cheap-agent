@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
+from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
@@ -39,11 +40,6 @@ from cheap_agent.parsers.latex_parser import (
 )
 from cheap_agent.workspace import resolve_safe_path, get_relative_path
 
-
-def _truncate(text: str, limit: int) -> str:
-    if len(text) <= limit:
-        return text
-    return text[:limit] + f"\n\n... [truncated at {limit} chars]"
 
 
 def _paper_cache_dir() -> Path:
@@ -230,7 +226,7 @@ def group_references_by_topic_logic(
     if llm_result:
         result += f"\n\nLLM Refinement:\n{llm_result}"
 
-    return _truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
+    return truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -329,7 +325,7 @@ def check_related_work_coverage_logic(
     if llm_result:
         result += f"\n\nLLM Analysis:\n{llm_result}"
 
-    return _truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
+    return truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -404,7 +400,7 @@ def check_reference_recency_logic(
     parts.append("  - This tool does not search online; it only checks local refs.bib")
     parts.append("  - If recent references are insufficient, user must add them manually")
 
-    return _truncate("\n".join(parts), MAX_RELATED_WORK_OUTPUT_CHARS)
+    return truncate("\n".join(parts), MAX_RELATED_WORK_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -503,7 +499,7 @@ def check_bibtex_quality_logic(
     else:
         parts.append("No significant quality issues found.")
 
-    return _truncate("\n".join(parts), MAX_RELATED_WORK_OUTPUT_CHARS)
+    return truncate("\n".join(parts), MAX_RELATED_WORK_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -633,7 +629,7 @@ def suggest_citation_positions_logic(
     if llm_result:
         result += f"\n\nLLM Refinement:\n{llm_result}"
 
-    return _truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
+    return truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
 
 
 # ---------------------------------------------------------------------------
@@ -745,4 +741,4 @@ def build_related_work_outline_logic(
     if llm_result:
         result += f"\n\nLLM Refinement:\n{llm_result}"
 
-    return _truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
+    return truncate(result, MAX_RELATED_WORK_OUTPUT_CHARS)
