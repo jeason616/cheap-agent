@@ -5,10 +5,8 @@ from pathlib import Path
 
 from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
-from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
     CACHE_SCHEMA_VERSION,
-    ENABLE_FIGURE_CACHE,
     ENABLE_LLM_FIGURE_CHECK,
     FIGURE_CACHE_TTL_SEC,
     LLM_MODEL,
@@ -21,7 +19,6 @@ from cheap_agent.config import (
     MAX_GRAPHICS_FILES,
     MAX_LABEL_REFS,
     MAX_OUTPUT_CHARS,
-    PAPER_CACHE_DIR,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
     WORKSPACE_ROOT,
@@ -33,13 +30,6 @@ from cheap_agent.parsers.latex_parser import (
     strip_latex_comments,
 )
 from cheap_agent.workspace import resolve_safe_path, get_relative_path
-
-
-
-def _paper_cache_dir() -> Path:
-    d = WORKSPACE_ROOT.resolve() / PAPER_CACHE_DIR
-    d.mkdir(parents=True, exist_ok=True)
-    return d
 
 
 def _call_llm(system_prompt: str, user_prompt: str, use_llm: bool) -> str | None:
@@ -295,10 +285,6 @@ def parse_figures_and_labels_logic(
         parts.append("")
 
     result = "\n".join(parts)
-
-    if ENABLE_FIGURE_CACHE:
-        cache_dir = _paper_cache_dir()
-        write_json_cache_atomic(cache_dir / "latex_figures.json", {"value": result})
 
     return truncate(result, MAX_FIGURE_OUTPUT_CHARS)
 

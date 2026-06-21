@@ -6,18 +6,15 @@ from pathlib import Path
 
 from cheap_agent.tools._common import truncate
 from cheap_agent.cache import make_hash
-from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
     CACHE_SCHEMA_VERSION,
     ENABLE_LLM_PAPER_REVIEW,
-    ENABLE_PAPER_CACHE,
     ENABLE_PAPER_TOOLS,
     LLM_MODEL,
     MAX_CITATION_ITEMS,
     MAX_CLAIMS_TO_CHECK,
     MAX_EVIDENCE_ITEMS,
     MAX_OUTPUT_CHARS,
-    PAPER_CACHE_DIR,
     PAPER_CACHE_TTL_SEC,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
@@ -50,13 +47,6 @@ from cheap_agent.parsers.bib_parser import (
     read_bib_file_safe,
     summarize_bib_entries,
 )
-
-
-
-def _paper_cache_dir() -> Path:
-    d = WORKSPACE_ROOT.resolve() / PAPER_CACHE_DIR
-    d.mkdir(parents=True, exist_ok=True)
-    return d
 
 
 def _file_mtime(path: str) -> tuple[float, int]:
@@ -284,10 +274,6 @@ def build_paper_map_logic(
         parts.append(f"  {read_idx}. {bib_files[0]}")
 
     result = "\n".join(parts)
-
-    if ENABLE_PAPER_CACHE:
-        cache_dir = _paper_cache_dir()
-        write_json_cache_atomic(cache_dir / "paper_map.json", {"value": result, "main_file": main_file})
 
     return truncate(result, MAX_OUTPUT_CHARS)
 
