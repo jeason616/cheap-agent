@@ -1,26 +1,14 @@
 import re
-import sys
-import time
-from collections import Counter
-from pathlib import Path
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import make_hash
 from cheap_agent.config import (
-    CACHE_SCHEMA_VERSION,
     ENABLE_LLM_PAPER_REVIEW,
-    ENABLE_PAPER_TOOLS,
-    LLM_MODEL,
-    MAX_CITATION_ITEMS,
     MAX_CLAIMS_TO_CHECK,
-    MAX_EVIDENCE_ITEMS,
     MAX_OUTPUT_CHARS,
-    PAPER_CACHE_TTL_SEC,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
     WORKSPACE_ROOT,
 )
-from cheap_agent.workspace import get_relative_path
 
 from cheap_agent.parsers.latex_parser import (
     detect_main_tex_file,
@@ -43,7 +31,6 @@ from cheap_agent.parsers.latex_parser import (
 from cheap_agent.parsers.bib_parser import (
     find_bib_files,
     parse_bib_entries,
-    parse_bib_keys_from_text,
     read_bib_file_safe,
     summarize_bib_entries,
 )
@@ -87,7 +74,7 @@ def detect_paper_project_logic(use_llm: bool = False) -> str:
             if "\\documentclass" in text:
                 evidence.append(f"{main_tex} contains \\documentclass")
             if "\\begin{document}" in text:
-                evidence.append(f"{main_tex} contains \\begin{document}")
+                evidence.append(f"{main_tex} contains \\begin{{document}}")  # noqa: F821
         except Exception:
             pass
 
@@ -243,7 +230,7 @@ def build_paper_map_logic(
         parts.append("")
 
     unique_cite_keys = list({c["key"] for c in all_citations})
-    parts.append(f"Citation count:")
+    parts.append("Citation count:")
     parts.append(f"  - {len(all_citations)} citation commands")
     parts.append(f"  - {len(unique_cite_keys)} unique citation keys")
     parts.append("")
@@ -677,7 +664,7 @@ def check_claim_evidence_logic(
             parts.append("   Suggestion: Use 'consistently improves' or add statistical evidence.")
         parts.append("")
 
-    parts.append(f"Overall issues:")
+    parts.append("Overall issues:")
     parts.append(f"  - {issues_count} claims lack direct evidence references.")
     parts.append("")
     parts.append("Notes for Codex:")
@@ -803,7 +790,7 @@ def check_citation_coverage_logic(
     issues = []
     if missing_bib:
         issues.append(f"{len(missing_bib)} citation key(s) are used in text but missing from {bib_file}.")
-    if uncied:
+    if uncited:
         issues.append(f"{len(uncited)} bib entries are not cited.")
     if duplicate_keys:
         issues.append(f"{len(duplicate_keys)} duplicate bib key(s) found.")
@@ -817,7 +804,7 @@ def check_citation_coverage_logic(
     parts.append("Suggested Codex actions:")
     if missing_bib:
         parts.append("  1. Verify missing bib keys.")
-    if uncied:
+    if uncited:
         parts.append("  2. Remove unused references only after confirming they are not needed.")
     parts.append("  3. Do not invent references.")
 

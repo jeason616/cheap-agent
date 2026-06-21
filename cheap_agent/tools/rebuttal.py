@@ -1,18 +1,11 @@
 import re
-import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import make_hash
-from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
-    CACHE_SCHEMA_VERSION,
     ENABLE_LLM_REBUTTAL_CHECK,
-    ENABLE_REBUTTAL_CACHE,
-    LLM_MODEL,
     MAX_COMMENT_CONTEXT_CHARS,
-    MAX_OUTPUT_CHARS,
     MAX_REBUTTAL_OUTPUT_CHARS,
     MAX_RESPONSE_OUTLINES,
     MAX_RESPONSE_TEXT_CHARS,
@@ -21,16 +14,12 @@ from cheap_agent.config import (
     PAPER_CACHE_DIR,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
-    REBUTTAL_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
 from cheap_agent.parsers.latex_parser import (
-    detect_main_tex_file,
     read_latex_file_safe,
-    resolve_latex_project_files,
-    strip_latex_comments,
 )
-from cheap_agent.workspace import resolve_safe_path, get_relative_path
+from cheap_agent.workspace import resolve_safe_path
 
 
 
@@ -440,7 +429,7 @@ def map_comments_to_revisions_logic(
         for ct in c["concern_types"]:
             sections.update(_SECTION_MAP.get(ct, ["Other"]))
 
-        parts.append(f"  Suggested revision targets:")
+        parts.append("  Suggested revision targets:")
         for s in sorted(sections):
             parts.append(f"    - {s}")
 
@@ -453,14 +442,14 @@ def map_comments_to_revisions_logic(
         if "citation" in c["concern_types"] or "related_work" in c["concern_types"]:
             evidence.append("Updated references")
         if evidence:
-            parts.append(f"  Suggested evidence to cite:")
+            parts.append("  Suggested evidence to cite:")
             for e in evidence:
                 parts.append(f"    - {e}")
 
-        parts.append(f"  Response should mention:")
-        parts.append(f"    - What was clarified or revised")
-        parts.append(f"    - Where it was revised (section/table/figure)")
-        parts.append(f"    - Why the revision addresses the concern")
+        parts.append("  Response should mention:")
+        parts.append("    - What was clarified or revised")
+        parts.append("    - Where it was revised (section/table/figure)")
+        parts.append("    - Why the revision addresses the concern")
 
         status = "needs revision" if c["severity"] in ("high", "medium") else "minor fix"
         parts.append(f"  Status: {status}")
@@ -554,7 +543,7 @@ def check_response_completeness_logic(
     missing = sum(1 for r in results if r["status"] == "missing")
 
     parts = ["Response Completeness Check", ""]
-    parts.append(f"Summary:")
+    parts.append("Summary:")
     parts.append(f"  - Reviewer comments parsed: {len(classified)}")
     parts.append(f"  - Fully addressed: {addressed}")
     parts.append(f"  - Partially addressed: {partial}")
@@ -574,7 +563,7 @@ def check_response_completeness_logic(
         for r in results:
             if r["status"] == "partial":
                 parts.append(f"  {r['comment']['comment_id']}")
-                parts.append(f"    Problem: Response found but missing specific location or evidence")
+                parts.append("    Problem: Response found but missing specific location or evidence")
         parts.append("")
 
     parts.append("Notes for Codex:")

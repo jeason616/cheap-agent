@@ -1,25 +1,15 @@
 import re
-import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import make_hash
-from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
-    CACHE_SCHEMA_VERSION,
     ENABLE_LLM_WRITING_CHECK,
-    ENABLE_WRITING_CACHE,
-    LLM_MODEL,
     MAX_ABSTRACT_CHARS,
     MAX_CONTRIBUTION_CHARS,
     MAX_INTRODUCTION_CHARS,
-    MAX_OUTPUT_CHARS,
     MAX_PARAGRAPH_CHARS,
-    MAX_STYLE_ISSUES,
-    MAX_TERM_OCCURRENCES,
     MAX_TERMS_TO_CHECK,
-    MAX_WRITING_INPUT_CHARS,
     MAX_WRITING_OUTPUT_CHARS,
     PAPER_CACHE_DIR,
     PAPER_LLM_MAX_TOKENS,
@@ -34,7 +24,7 @@ from cheap_agent.parsers.latex_parser import (
     resolve_latex_project_files,
     strip_latex_comments,
 )
-from cheap_agent.workspace import resolve_safe_path, get_relative_path
+from cheap_agent.workspace import resolve_safe_path
 
 
 

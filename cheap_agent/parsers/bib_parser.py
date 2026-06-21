@@ -1,6 +1,5 @@
 import re
 from collections import Counter
-from pathlib import Path
 
 from cheap_agent.config import MAX_BIB_ENTRIES, WORKSPACE_ROOT
 from cheap_agent.workspace import resolve_safe_path, SKIP_DIRS, MAX_FILE_SIZE

@@ -1,32 +1,22 @@
 import re
-import sys
-from collections import Counter, defaultdict
-from pathlib import Path
+from collections import defaultdict
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import make_hash
 from cheap_agent.config import (
-    CACHE_SCHEMA_VERSION,
     ENABLE_LLM_EXPERIMENT_CHECK,
-    EXPERIMENT_CACHE_TTL_SEC,
-    LLM_MODEL,
-    MAX_EXPERIMENT_CLAIMS,
     MAX_EXPERIMENT_OUTPUT_CHARS,
-    MAX_OUTPUT_CHARS,
     MAX_TABLE_FILES,
     MAX_TABLE_RAW_CHARS,
-    MAX_TABLES_TO_PARSE,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
 )
 from cheap_agent.parsers.latex_parser import (
     detect_main_tex_file,
-    parse_latex_inputs,
     read_latex_file_safe,
     resolve_latex_project_files,
     strip_latex_comments,
 )
-from cheap_agent.workspace import resolve_safe_path, get_relative_path
+from cheap_agent.workspace import resolve_safe_path
 
 
 # ---------------------------------------------------------------------------
@@ -478,7 +468,7 @@ def check_result_claim_consistency_logic(
                 })
 
     parts = ["Result-Claim Consistency Check", ""]
-    parts.append(f"Summary:")
+    parts.append("Summary:")
     parts.append(f"  - Claims checked: {claims_checked}")
     parts.append(f"  - Potential inconsistencies: {len(issues)}")
     parts.append(f"  - Claims lacking explicit evidence: {claims_lacking}")

@@ -1,18 +1,14 @@
 import json
-import sys
 import time
 from collections import defaultdict
-from pathlib import Path
 
 from cheap_agent.cache_manager import (
     clear_cache_namespace,
     ensure_cache_dir,
     get_cache_dir,
     get_cache_stats,
-    record_tool_perf,
 )
 from cheap_agent.config import ENABLE_DISK_CACHE, PERF_LOG_MAX_ENTRIES, WORKSPACE_ROOT
-from cheap_agent.workspace import get_relative_path
 
 
 

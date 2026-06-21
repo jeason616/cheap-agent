@@ -1,18 +1,13 @@
-import os
-import sys
-import time
 from collections import defaultdict
 from pathlib import Path
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import get_cache, make_hash, set_cache
+from cheap_agent.cache import get_cache, set_cache
 from cheap_agent.config import (
     ENABLE_LLM_FILE_SUMMARY,
     ENABLE_PROJECT_MAP_CACHE,
-    MAX_FILE_CHARS,
     MAX_OUTPUT_CHARS,
     MAX_PROJECT_MAP_FILES,
-    MAX_SUMMARY_FILES,
     MAX_SYMBOL_FILES_FOR_PROJECT_MAP,
     PROJECT_MAP_CACHE_TTL_SEC,
     WORKSPACE_ROOT,

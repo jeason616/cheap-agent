@@ -1,24 +1,13 @@
 import re
-import sys
 from collections import Counter, defaultdict
-from pathlib import Path
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import make_hash
 from cheap_agent.config import (
-    CACHE_SCHEMA_VERSION,
     ENABLE_LLM_FIGURE_CHECK,
-    FIGURE_CACHE_TTL_SEC,
-    LLM_MODEL,
     MAX_CAPTION_CHARS,
     MAX_CAPTION_CONTEXT_CHARS,
     MAX_CAPTION_ITEMS,
-    MAX_EQUATIONS_TO_CHECK,
-    MAX_FIGURE_ITEMS,
     MAX_FIGURE_OUTPUT_CHARS,
-    MAX_GRAPHICS_FILES,
-    MAX_LABEL_REFS,
-    MAX_OUTPUT_CHARS,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
     WORKSPACE_ROOT,
@@ -29,7 +18,7 @@ from cheap_agent.parsers.latex_parser import (
     resolve_latex_project_files,
     strip_latex_comments,
 )
-from cheap_agent.workspace import resolve_safe_path, get_relative_path
+from cheap_agent.workspace import resolve_safe_path
 
 
 def _call_llm(system_prompt: str, user_prompt: str, use_llm: bool) -> str | None:
@@ -392,7 +381,7 @@ def check_figure_reference_consistency_logic(
         })
 
     parts = ["Figure/Table Reference Consistency Check", ""]
-    parts.append(f"Summary:")
+    parts.append("Summary:")
     parts.append(f"  - Labels: {len(labels)}")
     parts.append(f"  - References: {len(refs)}")
     parts.append(f"  - Undefined references: {len(undefined_refs)}")
@@ -873,7 +862,7 @@ def check_equation_reference_consistency_logic(
         })
 
     parts = ["Equation Reference Consistency Check", ""]
-    parts.append(f"Summary:")
+    parts.append("Summary:")
     parts.append(f"  - Equations found: {len(equations)}")
     parts.append(f"  - Equation labels: {len(eq_labels)}")
     parts.append(f"  - Equation refs: {len(eq_refs)}")

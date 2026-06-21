@@ -1,5 +1,4 @@
 import re
-import sys
 from pathlib import Path
 
 from cheap_agent.tools._common import truncate
@@ -14,7 +13,6 @@ from cheap_agent.config import (
     MAX_TRACEBACK_FRAMES,
     WORKSPACE_ROOT,
 )
-from cheap_agent.workspace import get_relative_path, resolve_safe_path
 
 
 

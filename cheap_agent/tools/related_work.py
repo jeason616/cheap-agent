@@ -1,20 +1,12 @@
 import re
-import sys
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
 from cheap_agent.tools._common import truncate
-from cheap_agent.cache import make_hash
-from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
-    CACHE_SCHEMA_VERSION,
     ENABLE_LLM_RELATED_WORK_CHECK,
-    ENABLE_RELATED_WORK_CACHE,
-    LLM_MODEL,
     MAX_BIB_ENTRIES_TO_ANALYZE,
-    MAX_CITATION_SUGGESTIONS,
-    MAX_OUTPUT_CHARS,
     MAX_REFERENCE_GROUPS,
     MAX_REFERENCES_PER_TOPIC,
     MAX_RELATED_WORK_OUTPUT_CHARS,
@@ -22,8 +14,6 @@ from cheap_agent.config import (
     PAPER_CACHE_DIR,
     PAPER_LLM_MAX_TOKENS,
     PAPER_LLM_TEMPERATURE,
-    REFERENCE_RECENCY_YEARS,
-    RELATED_WORK_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
 from cheap_agent.parsers.bib_parser import (
@@ -38,7 +28,7 @@ from cheap_agent.parsers.latex_parser import (
     resolve_latex_project_files,
     strip_latex_comments,
 )
-from cheap_agent.workspace import resolve_safe_path, get_relative_path
+from cheap_agent.workspace import resolve_safe_path
 
 
 
@@ -367,7 +357,7 @@ def check_reference_recency_logic(
     recent_5 = sum(1 for y in years if y >= current_year - 5)
 
     parts = ["Reference Recency Check", ""]
-    parts.append(f"Summary:")
+    parts.append("Summary:")
     parts.append(f"  - Total references: {len(entries)}")
     parts.append(f"  - References with year: {len(years)}")
     parts.append(f"  - Missing year: {len(missing_year)}")
@@ -475,11 +465,11 @@ def check_bibtex_quality_logic(
                         "type": "possible duplicate",
                         "entry": f"{k1} / {k2}",
                         "severity": "medium",
-                        "suggestion": f"Similar titles — may be duplicate",
+                        "suggestion": "Similar titles — may be duplicate",
                     })
 
     parts = ["BibTeX Quality Check", ""]
-    parts.append(f"Summary:")
+    parts.append("Summary:")
     parts.append(f"  - Total entries: {len(entries)}")
     high = sum(1 for i in issues if i["severity"] == "high")
     med = sum(1 for i in issues if i["severity"] == "medium")

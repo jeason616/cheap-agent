@@ -1,6 +1,4 @@
 import re
-import sys
-import time
 from collections import defaultdict
 from pathlib import Path
 
@@ -9,7 +7,6 @@ from cheap_agent.cache import make_hash
 from cheap_agent.cache_manager import ensure_cache_dir, get_disk_cache, set_disk_cache, write_json_cache_atomic
 from cheap_agent.config import (
     CACHE_SCHEMA_VERSION,
-    CACHE_VERSION,
     ENABLE_CONVENTIONS_CACHE,
     ENABLE_LLM_CONVENTIONS,
     ENABLE_LLM_PROFILE,
@@ -18,18 +15,16 @@ from cheap_agent.config import (
     ENABLE_PROJECT_PROFILE_V2_CACHE,
     ENABLE_RUNBOOK_CACHE,
     LLM_MODEL,
-    MAX_CONVENTION_FILES,
     MAX_ONBOARDING_ITEMS,
     MAX_OUTPUT_CHARS,
     MAX_PROFILE_EVIDENCE_ITEMS,
-    MAX_RUNBOOK_COMMANDS,
     CONVENTIONS_CACHE_TTL_SEC,
     ONBOARDING_PACK_CACHE_TTL_SEC,
     PROJECT_PROFILE_V2_CACHE_TTL_SEC,
     RUNBOOK_CACHE_TTL_SEC,
     WORKSPACE_ROOT,
 )
-from cheap_agent.workspace import get_file_index_cached, get_file_index_version, get_relative_path
+from cheap_agent.workspace import get_file_index_cached, get_file_index_version
 
 
 
@@ -744,7 +739,7 @@ def explain_project_conventions_logic(
 
     tool_files = [p for p in paths if p.startswith("tools_") and p.endswith(".py")]
     parts.append("MCP tools:")
-    parts.append(f"  - Tools are registered in server.py")
+    parts.append("  - Tools are registered in server.py")
     parts.append(f"  - Logic functions live in {', '.join(tool_files) if tool_files else 'tools_*.py'}")
     parts.append("  - Tool functions should return strings")
     parts.append("  - Do not print to stdout (stdio MCP)")

@@ -1,6 +1,4 @@
 import re
-import sys
-from pathlib import Path
 
 from cheap_agent.tools._common import truncate
 from cheap_agent.cache import get_cache, make_hash, set_cache
@@ -10,14 +8,12 @@ from cheap_agent.config import (
     MASK_SECRET_VALUES,
     MAX_DIFF_CHARS,
     MAX_DIFF_FILES,
-    MAX_IMPACT_REFERENCES,
     MAX_IMPACT_SYMBOLS,
     MAX_OUTPUT_CHARS,
     MAX_REVIEW_CHANGED_FILES,
     REVIEW_CACHE_TTL_SEC,
-    WORKSPACE_ROOT,
 )
-from cheap_agent.workspace import get_project_files_cached, get_relative_path, resolve_safe_path
+from cheap_agent.workspace import resolve_safe_path
 
 
 
@@ -479,7 +475,7 @@ def post_edit_review_logic(
     parts.append("")
 
     coverage = _assess_task_coverage(task_description, files)
-    parts.append(f"Review summary:")
+    parts.append("Review summary:")
     parts.append(f"  - Task coverage: {coverage}")
     parts.append(f"  - Changed {len(files)} file(s)")
     parts.append("")

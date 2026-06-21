@@ -1,5 +1,4 @@
 import re
-import sys
 from pathlib import Path
 
 from cheap_agent.tools._common import truncate
@@ -10,11 +9,8 @@ from cheap_agent.config import (
     MASK_SECRET_VALUES,
     MAX_CHANGED_FILES_FOR_VALIDATION,
     MAX_CONFIG_FILES_TO_CHECK,
-    MAX_FILE_CHARS,
     MAX_OUTPUT_CHARS,
-    MAX_REPRO_CONTEXT_FILES,
     TESTING_CACHE_TTL_SEC,
-    WORKSPACE_ROOT,
 )
 from cheap_agent.workspace import get_project_files_cached, get_relative_path, resolve_safe_path
 
@@ -338,7 +334,7 @@ def generate_unit_test_plan_logic(
     parts.append("  - Use pytest fixtures for common test data")
     parts.append("")
 
-    parts.append(f"Notes for Codex:")
+    parts.append("Notes for Codex:")
     parts.append(f"  - Read {rel} to understand function signatures")
     if target_symbol:
         parts.append(f"  - Focus on testing {target_symbol} behavior")
@@ -368,10 +364,10 @@ def _generate_symbol_test_cases(symbol: str, goal: str) -> list[str]:
     return [
         f"Normal input: valid arguments that {symbol} should handle",
         f"Empty/None input: test {symbol} with empty or None arguments",
-        f"Boundary values: min/max valid values for numeric arguments",
-        f"Invalid input: wrong types, out-of-range values",
-        f"Return value: check type, range, and correctness",
-        f"Exceptions: verify expected exceptions are raised",
+        "Boundary values: min/max valid values for numeric arguments",
+        "Invalid input: wrong types, out-of-range values",
+        "Return value: check type, range, and correctness",
+        "Exceptions: verify expected exceptions are raised",
     ]
 
 
@@ -638,7 +634,7 @@ def suggest_validation_plan_logic(
     parts.append("  - Static checks can be done by reading files")
     parts.append("  - Commands should be confirmed by user before running")
     if parsed_files:
-        parts.append(f"  - Read changed files to understand the modifications")
+        parts.append("  - Read changed files to understand the modifications")
 
     result = "\n".join(parts)
 
