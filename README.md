@@ -50,15 +50,36 @@ It **only analyzes and suggests** — it never modifies code or papers. Final ch
 
 ### 1️⃣ Install
 
+The recommended way is a tool install — this creates a `cheap-agent` command
+you can point any MCP client at, with no absolute venv paths to maintain:
+
+```bash
+# Option A: pipx (isolated global tool)
+pipx install .
+
+# Option B: uv (faster)
+uv tool install .
+
+# Option C: editable dev install
+pip install -e .
+```
+
+<details>
+<summary>Alternative: run from source without installing</summary>
+
 ```bash
 cd cheap-agent
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env
+# then use `python -m cheap_agent` or `python server.py` instead of `cheap-agent`
 ```
 
+</details>
+
 ### 2️⃣ Configure `.env`
+
+Create a `.env` in the directory you launch from (or export the vars):
 
 ```env
 # OpenAI-compatible API
@@ -72,19 +93,37 @@ MCP_PROFILE=full
 
 ### 3️⃣ Connect to MCP Client
 
+With the `cheap-agent` command installed (step 1), point your client at it:
+
 **Codex** — edit `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.cheap_agent]
-command = "/path/to/cheap-agent/.venv/bin/python"
-args = ["/path/to/cheap-agent/server.py"]
+command = "cheap-agent"
 ```
 
 **Claude Code** — run:
 
 ```bash
-claude mcp add cheap-agent -- /path/to/cheap-agent/.venv/bin/python /path/to/cheap-agent/server.py
+claude mcp add cheap-agent -- cheap-agent
 ```
+
+<details>
+<summary>Without the installed command (run from source)</summary>
+
+```toml
+# Codex
+[mcp_servers.cheap_agent]
+command = "/path/to/cheap-agent/.venv/bin/python"
+args = ["-m", "cheap_agent"]
+```
+```bash
+# Claude Code
+claude mcp add cheap-agent -- /path/to/cheap-agent/.venv/bin/python -m cheap_agent
+```
+`python server.py` (legacy) still works for existing configs.
+
+</details>
 
 ### 4️⃣ Test
 

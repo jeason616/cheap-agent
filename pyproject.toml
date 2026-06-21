@@ -34,6 +34,12 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/jinjisen/cheap-agent"
 
+[project.scripts]
+# Installs a `cheap-agent` console command that launches the MCP server.
+# Usage after `pipx install .` / `uv tool install .`:
+#   claude mcp add cheap-agent -- cheap-agent
+cheap-agent = "cheap_agent.server:main"
+
 [tool.setuptools]
 packages = ["cheap_agent", "cheap_agent.parsers", "cheap_agent.prompts", "cheap_agent.tools"]
 
