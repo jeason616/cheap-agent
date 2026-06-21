@@ -91,6 +91,11 @@ LLM_MODEL=mimo-v2.5-pro
 MCP_PROFILE=full
 ```
 
+> ⚠️ **If you installed `cheap-agent` as a global command**, where this `.env`
+> is found depends on the MCP client's working directory. See
+> [⚙️ Configuration: LLM API & Workspace](#️-configuration-llm-api--workspace)
+> below for the four ways to set it up correctly.
+
 ### 3️⃣ Connect to MCP Client
 
 With the `cheap-agent` command installed (step 1), point your client at it:
@@ -295,6 +300,91 @@ python -m pytest tests/ -v -m integration
 | `draft_response_outline` | Response outline generation | ✅ |
 
 </details>
+
+---
+
+## ⚙️ Configuration: LLM API & Workspace
+
+> **Read this if you installed `cheap-agent` as a command (pipx / uv tool / pip).**
+> When run from source, the `.env` sits next to `server.py` and "just works".
+> Once installed globally, **where the config lives depends on the working
+> directory the MCP client launches `cheap-agent` in.**
+
+### Two things the server needs at startup
+
+| Need | Source | How it's resolved |
+|:-----|:-------|:------------------|
+| **LLM credentials** | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | `os.getenv`, plus `.env` loaded from the **current working directory** |
+| **Workspace root** | `WORKSPACE_ROOT` | Defaults to the **current working directory** (`os.getcwd()`) if unset. All file access is sandboxed to this path. |
+
+Both depend on the process's working directory. With a global `cheap-agent`
+command, that directory is chosen by the MCP client — not by you — so get it
+right or the server will (a) warn that `LLM_API_KEY is not set`, and (b) scan
+the wrong project.
+
+### Four ways to configure (pick one)
+
+**① `.env` in the project you're analyzing — recommended.**
+Put `.env` in the root of the project you want analyzed. The MCP client must
+launch `cheap-agent` with that directory as cwd (see ③). `WORKSPACE_ROOT` then
+auto-resolves to the same dir, so the path sandbox aligns for free.
+
+```bash
+cd /path/to/your-research-project
+cp /path/to/cheap-agent/.env.example .env   # then edit
+```
+
+**② Environment variables — share one config across projects.**
+Export the vars in your shell profile (`~/.bashrc`, `~/.zshrc`, or Windows
+user env vars). `os.getenv` picks them up everywhere. But `WORKSPACE_ROOT`
+still falls back to cwd, so the launch directory still matters.
+
+```bash
+export LLM_BASE_URL="https://token-plan-cn.xiaomimimo.com/v1"
+export LLM_API_KEY="your-key-here"
+export LLM_MODEL="mimo-v2.5-pro"
+```
+
+**③ Pin `cwd` (and optionally `env`) in the MCP client config — most precise.**
+This is the robust choice: explicitly set the working directory to the project
+you're analyzing, so `.env`, `WORKSPACE_ROOT`, and the sandbox all agree.
+
+```toml
+# Codex — ~/.codex/config.toml
+[mcp_servers.cheap_agent]
+command = "cheap-agent"
+cwd = "/path/to/your-research-project"
+# Optional: inline env instead of a .env file
+env = { LLM_API_KEY = "your-key", LLM_BASE_URL = "https://...", LLM_MODEL = "mimo-v2.5-pro" }
+```
+
+**④ Pin `WORKSPACE_ROOT` inside `.env` — for a single fixed project.**
+If you mostly analyze one project, set it explicitly so the server no longer
+depends on the launch directory:
+
+```env
+WORKSPACE_ROOT=/path/to/your-research-project
+LLM_API_KEY=your-key
+...
+```
+
+### Checking it worked
+
+On startup the server logs (to stderr, visible in MCP client logs):
+
+```
+[cheap_agent.config] INFO: WORKSPACE_ROOT=/path/to/your-research-project
+[cheap_agent.config] WARNING: LLM_API_KEY is not set   # ← means config not found
+```
+
+If you see the `LLM_API_KEY is not set` warning, the server didn't find your
+`.env` — it's a cwd mismatch. Fix it with ③ (`cwd =`) or ④ (`WORKSPACE_ROOT=`).
+
+### Full config reference
+
+Only the essentials are listed in `.env.example`. Every other knob has a sane
+default in [`cheap_agent/config.py`](cheap_agent/config.py) — see there for the
+complete list (LLM, cache TTLs, output limits, profile switches, transport).
 
 ---
 
