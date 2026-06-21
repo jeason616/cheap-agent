@@ -12,3 +12,6 @@ build/
 AGENTS.md
 .code_agent_cache/
 .pytest_cache/
+# uv lockfile — this project pins deps via requirements.txt; uv is only
+# used ad-hoc for lint verification, so don't track its generated lock.
+uv.lock
