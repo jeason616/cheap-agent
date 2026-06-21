@@ -103,7 +103,6 @@ ENABLE_LLM_PROFILE: bool = os.getenv("ENABLE_LLM_PROFILE", "true").lower() == "t
 ENABLE_LLM_RUNBOOK: bool = os.getenv("ENABLE_LLM_RUNBOOK", "true").lower() == "true"
 ENABLE_LLM_CONVENTIONS: bool = os.getenv("ENABLE_LLM_CONVENTIONS", "true").lower() == "true"
 
-ENABLE_PAPER_TOOLS: bool = os.getenv("ENABLE_PAPER_TOOLS", "true").lower() == "true"
 ENABLE_PAPER_CACHE: bool = os.getenv("ENABLE_PAPER_CACHE", "true").lower() == "true"
 PAPER_CACHE_TTL_SEC: int = _env_int("PAPER_CACHE_TTL_SEC", 3600)
 

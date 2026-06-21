@@ -26,7 +26,6 @@ from cheap_agent.config import (
     ENABLE_PAPER_TOOLS,
     ENABLE_PAPER_WRITING_TOOLS,
     MCP_PROFILE,
-    SHOW_DISABLED_TOOLS,
     SHOW_TOOL_LLM_REQUIREMENT,
     SHOW_TOOL_RISK_LEVEL,
 )
@@ -40,23 +39,6 @@ def get_active_profile() -> str:
         return "safe"
     return profile
 
-
-_CATEGORY_TO_GROUP_SWITCH = {
-    "code_reading": "ENABLE_CODE_READING_TOOLS",
-    "code_project": "ENABLE_CODE_PROJECT_TOOLS",
-    "code_diagnostic": "ENABLE_CODE_DIAGNOSTIC_TOOLS",
-    "code_testing": "ENABLE_CODE_TESTING_TOOLS",
-    "code_review": "ENABLE_CODE_REVIEW_TOOLS",
-    "paper_structure": "ENABLE_PAPER_STRUCTURE_TOOLS",
-    "paper_citation": "ENABLE_PAPER_CITATION_TOOLS",
-    "paper_experiment": "ENABLE_PAPER_EXPERIMENT_TOOLS",
-    "paper_writing": "ENABLE_PAPER_WRITING_TOOLS",
-    "paper_figure": "ENABLE_PAPER_FIGURE_TOOLS",
-    "paper_related_work": "ENABLE_PAPER_RELATED_WORK_TOOLS",
-    "paper_rebuttal": "ENABLE_PAPER_REBUTTAL_TOOLS",
-    "cache": None,
-    "meta": None,
-}
 
 _GROUP_SWITCH_MAP = {
     "code": ENABLE_CODE_TOOLS,

@@ -89,7 +89,11 @@ claude mcp add cheap-agent -- /path/to/cheap-agent/.venv/bin/python /path/to/che
 ### 4️⃣ Test
 
 ```bash
-python -m pytest tests/ -v --ignore=tests/test_integration.py
+# Unit tests (integration tests are skipped by default)
+python -m pytest tests/ -v
+
+# Run the slow end-to-end stdio integration tests explicitly
+python -m pytest tests/ -v -m integration
 ```
 
 ---
@@ -297,32 +301,37 @@ MCP_PROFILE=paper
 
 ```
 cheap-agent/
-├── server.py              # 🚀 MCP Server entry point
-├── config.py              # ⚙️ Configuration
-├── tool_registry.py       # 📋 Tool metadata registry
-├── profiles.py            # 🎛️ Profile management
-├── workspace.py           # 📁 Safe file reading
-├── llm_client.py          # 🤖 LLM client
-├── cache.py               # 💾 In-memory cache
-├── cache_manager.py       # 💿 Disk cache
-├── parsers/               # 📖 LaTeX/BibTeX parsers
-├── prompts/               # 📝 Prompt templates
-└── tools/                 # 🧰 20 tool modules
-    ├── code.py            #   Code analysis
-    ├── reading.py         #   File reading
-    ├── project.py         #   Project understanding
-    ├── diagnostics.py     #   Error diagnostics
-    ├── testing.py         #   Testing & validation
-    ├── review.py          #   Code review
-    ├── cache_tools.py     #   Cache management
-    ├── profile.py         #   Project profiling
-    ├── meta.py            #   Meta tools
-    ├── paper.py           #   Paper structure
-    ├── experiments.py     #   Experiment verification
-    ├── writing.py         #   Writing review
-    ├── figures.py         #   Figure & reference
-    ├── related_work.py    #   References & Related Work
-    └── rebuttal.py        #   Reviewer response
+├── server.py              # 🚀 MCP Server entry point (registers all tools)
+├── requirements.txt       # 📦 Pinned dependencies
+├── pyproject.toml         # ⚙️ Project metadata, ruff & pytest config
+├── cheap_agent/           # 📦 Main package
+│   ├── __init__.py        #   Package init (__version__)
+│   ├── config.py          #   Configuration (env-driven)
+│   ├── tool_registry.py   #   Tool metadata registry (single source of truth)
+│   ├── profiles.py        #   Profile & feature-switch management
+│   ├── workspace.py       #   Safe, sandboxed file reading
+│   ├── llm_client.py      #   LLM client (with retry)
+│   ├── cache.py           #   In-memory cache
+│   ├── cache_manager.py   #   Disk cache
+│   ├── parsers/           #   LaTeX/BibTeX parsers
+│   ├── prompts/           #   Prompt templates
+│   └── tools/             #   🧰 15 tool modules
+│       ├── reading.py     #     File reading
+│       ├── project.py     #     Project understanding
+│       ├── diagnostics.py #     Error diagnostics
+│       ├── testing.py     #     Testing & validation
+│       ├── review.py      #     Code review
+│       ├── code.py        #     Code analysis helpers
+│       ├── profile.py     #     Project profiling
+│       ├── cache_tools.py #     Cache management
+│       ├── meta.py        #     Meta tools
+│       ├── paper.py       #     Paper structure
+│       ├── experiments.py #     Experiment verification
+│       ├── writing.py     #     Writing review
+│       ├── figures.py     #     Figure & reference
+│       ├── related_work.py#     References & Related Work
+│       └── rebuttal.py    #     Reviewer response
+└── tests/                 # 🧪 Test suite
 ```
 
 ---

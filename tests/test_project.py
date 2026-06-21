@@ -23,13 +23,13 @@ def test_build_project_map():
 def test_summarize_file():
     from cheap_agent.tools.project import summarize_file_logic
 
-    result = summarize_file_logic("config.py", use_llm=False)
+    result = summarize_file_logic("cheap_agent/config.py", use_llm=False)
     assert "File:" in result
     assert "Type:" in result
     assert "Lines:" in result
     print("[PASS] summarize_file without LLM")
 
-    result = summarize_file_logic("workspace.py", use_llm=False)
+    result = summarize_file_logic("cheap_agent/workspace.py", use_llm=False)
     assert "Python" in result
     print("[PASS] summarize_file Python file")
 

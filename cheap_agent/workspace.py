@@ -2,7 +2,7 @@ import fnmatch
 import time
 from pathlib import Path
 
-from cheap_agent.config import MAX_FILE_CHARS, MAX_SCAN_FILE_SIZE_BYTES, WORKSPACE_ROOT
+from cheap_agent.config import MAX_FILE_CHARS, WORKSPACE_ROOT
 
 SKIP_DIRS = {
     ".git", ".venv", "venv", "__pycache__", "node_modules",
@@ -141,7 +141,6 @@ def get_project_files_cached(
 
 def build_file_index(max_files: int | None = None) -> list[dict]:
     """Build a detailed file index with metadata."""
-    from cheap_agent.config import MAX_FILE_CHARS as _max
     limit = max_files or 500
     root = WORKSPACE_ROOT.resolve()
     results: list[dict] = []

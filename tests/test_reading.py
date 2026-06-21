@@ -6,21 +6,21 @@ import sys
 def test_read_file_around_line():
     from cheap_agent.tools.reading import read_file_around_line_logic
 
-    result = read_file_around_line_logic("config.py", 1, context_lines=10)
+    result = read_file_around_line_logic("cheap_agent/config.py", 1, context_lines=10)
     assert "File:" in result
     assert ">> " in result
     assert "Total lines:" in result
     print("[PASS] read_file_around_line normal")
 
-    result = read_file_around_line_logic("config.py", 99999)
+    result = read_file_around_line_logic("cheap_agent/config.py", 99999)
     assert "Error" in result or "exceeds" in result
     print("[PASS] read_file_around_line line out of range")
 
-    result = read_file_around_line_logic("config.py", 0)
+    result = read_file_around_line_logic("cheap_agent/config.py", 0)
     assert "Error" in result
     print("[PASS] read_file_around_line line < 1")
 
-    result = read_file_around_line_logic("config.py", 1, context_lines=9999)
+    result = read_file_around_line_logic("cheap_agent/config.py", 1, context_lines=9999)
     assert ">> " in result
     print("[PASS] read_file_around_line context_lines capped")
 
@@ -35,7 +35,7 @@ def test_read_file_around_line():
 def test_extract_symbols():
     from cheap_agent.tools.reading import extract_symbols_logic
 
-    result = extract_symbols_logic("workspace.py")
+    result = extract_symbols_logic("cheap_agent/workspace.py")
     assert "Imports:" in result
     assert "Top-level functions:" in result
     assert "resolve_safe_path" in result
@@ -62,7 +62,7 @@ def test_search_code():
 
     result = search_code_logic("resolve_safe_path")
     assert "Results:" in result
-    assert "workspace.py" in result
+    assert "cheap_agent/workspace.py" in result
     print("[PASS] search_code normal")
 
     result = search_code_logic("def ", file_glob="*.py")

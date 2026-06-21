@@ -13,7 +13,7 @@ def test_suggest_minimal_repro():
     assert "Suggested repro script outline" in result
     print("[PASS] suggest_minimal_repro normal")
 
-    result = suggest_minimal_repro_logic("...", related_file="config.py", use_llm=False)
+    result = suggest_minimal_repro_logic("...", related_file="cheap_agent/config.py", use_llm=False)
     assert "Minimal Reproduction Plan" in result
     print("[PASS] suggest_minimal_repro with related file")
 
@@ -29,17 +29,17 @@ def test_suggest_minimal_repro():
 def test_generate_unit_test_plan():
     from cheap_agent.tools.testing import generate_unit_test_plan_logic
 
-    result = generate_unit_test_plan_logic("workspace.py", use_llm=False)
+    result = generate_unit_test_plan_logic("cheap_agent/workspace.py", use_llm=False)
     assert "Unit Test Plan" in result
     assert "Target file" in result
     assert "Core test cases" in result
     print("[PASS] generate_unit_test_plan normal")
 
-    result = generate_unit_test_plan_logic("workspace.py", target_symbol="resolve_safe_path", use_llm=False)
+    result = generate_unit_test_plan_logic("cheap_agent/workspace.py", target_symbol="resolve_safe_path", use_llm=False)
     assert "resolve_safe_path" in result
     print("[PASS] generate_unit_test_plan with target symbol")
 
-    result = generate_unit_test_plan_logic("workspace.py", target_symbol="nonexistent_func_xyz", use_llm=False)
+    result = generate_unit_test_plan_logic("cheap_agent/workspace.py", target_symbol="nonexistent_func_xyz", use_llm=False)
     assert "not found" in result.lower() or "Unit Test Plan" in result
     print("[PASS] generate_unit_test_plan symbol not found")
 

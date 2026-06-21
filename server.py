@@ -4,6 +4,7 @@ from mcp.server.fastmcp import FastMCP
 
 from cheap_agent.config import MCP_HOST, MCP_PATH, MCP_PORT, MCP_TRANSPORT
 from cheap_agent.profiles import get_active_profile, is_tool_allowed
+from cheap_agent.tool_registry import TOOL_REGISTRY
 
 # ── Logic function imports ───────────────────────────────────────
 from cheap_agent.tools.code import (
@@ -131,12 +132,17 @@ def _safe_call(fn, *args, **kwargs) -> str:
         return f"[Tool Error] {e}"
 
 
-def _register(tool_name: str, fn, description: str, **params):
-    """Register a tool only if it's allowed by the current profile."""
-    if not is_tool_allowed(tool_name):
+def _register(tool_name: str, fn):
+    """Register a tool only if allowed by the current profile.
+
+    Description is pulled from TOOL_REGISTRY so it has a single source of
+    truth (no duplicated strings between server.py and tool_registry.py).
+    """
+    meta = TOOL_REGISTRY.get(tool_name)
+    if meta is None or not is_tool_allowed(tool_name):
         return
 
-    @mcp.tool(name=tool_name, description=description)
+    @mcp.tool(name=tool_name, description=meta.description)
     def _wrapper(**kwargs):
         return _safe_call(fn, **kwargs)
 
@@ -172,179 +178,113 @@ _registered_tools.extend(["list_available_tools", "show_active_profile", "explai
 
 # ── Cache tools ─────────────────────────────────────────────────
 
-_register("cache_status", cache_status_logic, "View cache status, namespaces, and performance stats.")
-_register("clear_cache", clear_cache_logic, "Clean expired or specified cache namespaces.")
-_register("rebuild_project_index", rebuild_project_index_logic, "Force rebuild project file index.")
-_register("get_cached_project_context", get_cached_project_context_logic, "Return cached project context.")
-_register("export_perf_report", export_perf_report_logic, "Export tool performance report.")
+_register("cache_status", cache_status_logic)
+_register("clear_cache", clear_cache_logic)
+_register("rebuild_project_index", rebuild_project_index_logic)
+_register("get_cached_project_context", get_cached_project_context_logic)
+_register("export_perf_report", export_perf_report_logic)
 
 # ── Code: reading ───────────────────────────────────────────────
 
-_register("read_file_around_line", read_file_around_line_logic,
-          "Read code snippet around a specific line number.")
-_register("extract_symbols", extract_symbols_logic,
-          "Extract functions, classes, imports from a code file.")
-_register("search_code", search_code_logic,
-          "Search keywords in project files.")
-_register("find_related_files", find_related_files_logic,
-          "Find files related to a task description.")
+_register("read_file_around_line", read_file_around_line_logic)
+_register("extract_symbols", extract_symbols_logic)
+_register("search_code", search_code_logic)
+_register("find_related_files", find_related_files_logic)
 
 # ── Code: project ───────────────────────────────────────────────
 
-_register("build_project_map", build_project_map_logic,
-          "Build project structure map.")
-_register("summarize_file", summarize_file_logic,
-          "Summarize a single file.")
-_register("summarize_directory", summarize_directory_logic,
-          "Summarize a directory.")
-_register("detect_project_profile", detect_project_profile_logic,
-          "Detect project type, language, and stack.")
-_register("build_project_profile_v2", build_project_profile_v2_logic,
-          "Build detailed project profile with evidence and confidence.")
-_register("get_codex_onboarding_pack", get_codex_onboarding_pack_logic,
-          "Generate short onboarding context for Codex.")
-_register("infer_project_runbook", infer_project_runbook_logic,
-          "Infer install, start, test, debug workflows.")
-_register("recommend_workflow_for_task", recommend_workflow_for_task_logic,
-          "Recommend MCP tool sequence for a task.")
-_register("explain_project_conventions", explain_project_conventions_logic,
-          "Summarize project development conventions.")
-_register("review_file", review_file_logic,
-          "Review a code file for issues.")
-_register("summarize_project", summarize_project_logic,
-          "Summarize project structure.")
+_register("build_project_map", build_project_map_logic)
+_register("summarize_file", summarize_file_logic)
+_register("summarize_directory", summarize_directory_logic)
+_register("detect_project_profile", detect_project_profile_logic)
+_register("build_project_profile_v2", build_project_profile_v2_logic)
+_register("get_codex_onboarding_pack", get_codex_onboarding_pack_logic)
+_register("infer_project_runbook", infer_project_runbook_logic)
+_register("recommend_workflow_for_task", recommend_workflow_for_task_logic)
+_register("explain_project_conventions", explain_project_conventions_logic)
+_register("review_file", review_file_logic)
+_register("summarize_project", summarize_project_logic)
 
 # ── Code: diagnostics ───────────────────────────────────────────
 
-_register("analyze_error_log", analyze_error_log_logic,
-          "Analyze error log for causes and next steps.")
-_register("analyze_traceback_with_context", analyze_traceback_with_context_logic,
-          "Parse Python traceback and read relevant code context.")
-_register("diagnose_import_error", diagnose_import_error_logic,
-          "Diagnose ModuleNotFoundError and ImportError.")
-_register("diagnose_training_error", diagnose_training_error_logic,
-          "Diagnose CUDA OOM, shape mismatch, dataloader errors.")
-_register("suggest_debug_steps", suggest_debug_steps_logic,
-          "Generate structured debug plan.")
+_register("analyze_error_log", analyze_error_log_logic)
+_register("analyze_traceback_with_context", analyze_traceback_with_context_logic)
+_register("diagnose_import_error", diagnose_import_error_logic)
+_register("diagnose_training_error", diagnose_training_error_logic)
+_register("suggest_debug_steps", suggest_debug_steps_logic)
 
 # ── Code: testing ───────────────────────────────────────────────
 
-_register("generate_test_ideas", generate_test_ideas_logic,
-          "Generate test ideas for a file.")
-_register("suggest_minimal_repro", suggest_minimal_repro_logic,
-          "Generate minimal reproduction plan.")
-_register("generate_unit_test_plan", generate_unit_test_plan_logic,
-          "Generate unit test plan for a file or symbol.")
-_register("check_config_consistency", check_config_consistency_logic,
-          "Check config file vs code consistency.")
-_register("suggest_validation_plan", suggest_validation_plan_logic,
-          "Generate validation plan for changed files.")
+_register("generate_test_ideas", generate_test_ideas_logic)
+_register("suggest_minimal_repro", suggest_minimal_repro_logic)
+_register("generate_unit_test_plan", generate_unit_test_plan_logic)
+_register("check_config_consistency", check_config_consistency_logic)
+_register("suggest_validation_plan", suggest_validation_plan_logic)
 
 # ── Code: review ────────────────────────────────────────────────
 
-_register("review_diff", review_diff_logic,
-          "Review unified diff for bugs and missing syncs.")
-_register("risk_check_before_edit", risk_check_before_edit_logic,
-          "Analyze risk before code changes.")
-_register("post_edit_review", post_edit_review_logic,
-          "Post-edit review with task and changed files.")
-_register("analyze_change_impact", analyze_change_impact_logic,
-          "Analyze potential impact of code changes.")
+_register("review_diff", review_diff_logic)
+_register("risk_check_before_edit", risk_check_before_edit_logic)
+_register("post_edit_review", post_edit_review_logic)
+_register("analyze_change_impact", analyze_change_impact_logic)
 
 # ── Paper: structure ────────────────────────────────────────────
 
-_register("detect_paper_project", detect_paper_project_logic,
-          "Detect if project is a LaTeX/Markdown paper.")
-_register("build_paper_map", build_paper_map_logic,
-          "Build paper map with sections, bib, figures, labels.")
-_register("summarize_latex_structure", summarize_latex_structure_logic,
-          "Summarize LaTeX paper structure.")
-_register("find_paper_sections", find_paper_sections_logic,
-          "Find paper sections by query.")
-_register("review_paper_structure", review_paper_structure_logic,
-          "Check paper structure completeness.")
-_register("check_claim_evidence", check_claim_evidence_logic,
-          "Check if claims have evidence support.")
+_register("detect_paper_project", detect_paper_project_logic)
+_register("build_paper_map", build_paper_map_logic)
+_register("summarize_latex_structure", summarize_latex_structure_logic)
+_register("find_paper_sections", find_paper_sections_logic)
+_register("review_paper_structure", review_paper_structure_logic)
+_register("check_claim_evidence", check_claim_evidence_logic)
 
 # ── Paper: citation ─────────────────────────────────────────────
 
-_register("parse_bib_file", parse_bib_file_logic,
-          "Parse BibTeX file and summarize entries.")
-_register("check_citation_coverage", check_citation_coverage_logic,
-          "Check citation keys consistency between text and bib.")
+_register("parse_bib_file", parse_bib_file_logic)
+_register("check_citation_coverage", check_citation_coverage_logic)
 
 # ── Paper: experiment ───────────────────────────────────────────
 
-_register("parse_latex_tables", parse_latex_tables_detailed,
-          "Parse LaTeX tables with caption, label, columns, rows.")
-_register("extract_experiment_claims", extract_experiment_claims_logic,
-          "Extract experiment claims from text.")
-_register("check_result_claim_consistency", check_result_claim_consistency_logic,
-          "Check if claims are supported by table results.")
-_register("check_ablation_logic", check_ablation_logic_logic,
-          "Check ablation study completeness.")
-_register("check_metric_consistency", check_metric_consistency_logic,
-          "Check metric notation consistency.")
+_register("parse_latex_tables", parse_latex_tables_detailed)
+_register("extract_experiment_claims", extract_experiment_claims_logic)
+_register("check_result_claim_consistency", check_result_claim_consistency_logic)
+_register("check_ablation_logic", check_ablation_logic_logic)
+_register("check_metric_consistency", check_metric_consistency_logic)
 
 # ── Paper: writing ──────────────────────────────────────────────
 
-_register("review_academic_paragraph", review_academic_paragraph_logic,
-          "Review paragraph for academic quality.")
-_register("check_abstract_quality", check_abstract_quality_logic,
-          "Check abstract coverage and quality.")
-_register("check_introduction_logic", check_introduction_logic_logic,
-          "Check Introduction logic chain.")
-_register("check_contribution_clarity", check_contribution_clarity_logic,
-          "Check contribution clarity and evidence.")
-_register("check_term_consistency", check_term_consistency_logic,
-          "Check term and abbreviation consistency.")
-_register("check_ieee_style", check_ieee_style_logic,
-          "Check IEEE/TGRS style issues.")
+_register("review_academic_paragraph", review_academic_paragraph_logic)
+_register("check_abstract_quality", check_abstract_quality_logic)
+_register("check_introduction_logic", check_introduction_logic_logic)
+_register("check_contribution_clarity", check_contribution_clarity_logic)
+_register("check_term_consistency", check_term_consistency_logic)
+_register("check_ieee_style", check_ieee_style_logic)
 
 # ── Paper: figures ──────────────────────────────────────────────
 
-_register("parse_figures_and_labels", parse_figures_and_labels_logic,
-          "Parse LaTeX figures, tables, equations, labels, refs.")
-_register("check_figure_reference_consistency", check_figure_reference_consistency_logic,
-          "Check figure/table/equation label and ref consistency.")
-_register("review_figure_caption", review_figure_caption_logic,
-          "Review figure caption quality.")
-_register("review_table_caption", review_table_caption_logic,
-          "Review table caption quality.")
-_register("check_caption_text_consistency", check_caption_text_consistency_logic,
-          "Check caption vs referencing text consistency.")
-_register("check_equation_reference_consistency", check_equation_reference_consistency_logic,
-          "Check equation label, ref, symbol consistency.")
+_register("parse_figures_and_labels", parse_figures_and_labels_logic)
+_register("check_figure_reference_consistency", check_figure_reference_consistency_logic)
+_register("review_figure_caption", review_figure_caption_logic)
+_register("review_table_caption", review_table_caption_logic)
+_register("check_caption_text_consistency", check_caption_text_consistency_logic)
+_register("check_equation_reference_consistency", check_equation_reference_consistency_logic)
 
 # ── Paper: related work ─────────────────────────────────────────
 
-_register("group_references_by_topic", group_references_by_topic_logic,
-          "Group bib entries by research topic.")
-_register("check_related_work_coverage", check_related_work_coverage_logic,
-          "Check Related Work topic coverage.")
-_register("check_reference_recency", check_reference_recency_logic,
-          "Check reference year distribution.")
-_register("check_bibtex_quality", check_bibtex_quality_logic,
-          "Check BibTeX entry quality.")
-_register("suggest_citation_positions", suggest_citation_positions_logic,
-          "Suggest where citations are needed in text.")
-_register("build_related_work_outline", build_related_work_outline_logic,
-          "Generate Related Work organization outline.")
+_register("group_references_by_topic", group_references_by_topic_logic)
+_register("check_related_work_coverage", check_related_work_coverage_logic)
+_register("check_reference_recency", check_reference_recency_logic)
+_register("check_bibtex_quality", check_bibtex_quality_logic)
+_register("suggest_citation_positions", suggest_citation_positions_logic)
+_register("build_related_work_outline", build_related_work_outline_logic)
 
 # ── Paper: rebuttal ─────────────────────────────────────────────
 
-_register("parse_reviewer_comments", parse_reviewer_comments_logic,
-          "Parse reviewer comments with concern type and severity.")
-_register("group_reviewer_concerns", group_reviewer_concerns_logic,
-          "Aggregate multi-reviewer concerns.")
-_register("map_comments_to_revisions", map_comments_to_revisions_logic,
-          "Map reviewer comments to manuscript revision targets.")
-_register("check_response_completeness", check_response_completeness_logic,
-          "Check if response letter addresses all comments.")
-_register("review_response_tone", review_response_tone_logic,
-          "Check response tone for professionalism.")
-_register("draft_response_outline", draft_response_outline_logic,
-          "Generate response outline for reviewer comments.")
+_register("parse_reviewer_comments", parse_reviewer_comments_logic)
+_register("group_reviewer_concerns", group_reviewer_concerns_logic)
+_register("map_comments_to_revisions", map_comments_to_revisions_logic)
+_register("check_response_completeness", check_response_completeness_logic)
+_register("review_response_tone", review_response_tone_logic)
+_register("draft_response_outline", draft_response_outline_logic)
 
 # ── Entry point ─────────────────────────────────────────────────
 
