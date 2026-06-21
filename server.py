@@ -1,10 +1,11 @@
-import sys
-
 from mcp.server.fastmcp import FastMCP
 
 from cheap_agent.config import MCP_HOST, MCP_PATH, MCP_PORT, MCP_TRANSPORT
+from cheap_agent.logging_setup import get_logger
 from cheap_agent.profiles import get_active_profile, is_tool_allowed
 from cheap_agent.tool_registry import TOOL_REGISTRY
+
+logger = get_logger("cheap-agent")
 
 # ── Logic function imports ───────────────────────────────────────
 from cheap_agent.tools.code import (
@@ -125,11 +126,21 @@ _registered_tools: list[str] = []
 
 
 def _safe_call(fn, *args, **kwargs) -> str:
+    """Run a tool logic function, translating exceptions to error strings.
+
+    Business errors (missing file, path violation, bad input) are expected and
+    logged at WARNING without a traceback. Anything else is unexpected and
+    logged with a full traceback via logger.exception so failures are
+    diagnosable in production.
+    """
     try:
         return fn(*args, **kwargs)
+    except (FileNotFoundError, PermissionError, ValueError, IsADirectoryError) as e:
+        logger.warning("tool %s raised %s: %s", fn.__name__, type(e).__name__, e)
+        return f"[Tool Error] {type(e).__name__}: {e}"
     except Exception as e:
-        print(f"[cheap-agent] tool error in {fn.__name__}: {e}", file=sys.stderr)
-        return f"[Tool Error] {e}"
+        logger.exception("tool %s failed unexpectedly", fn.__name__)
+        return f"[Tool Error] {type(e).__name__}: {e}"
 
 
 def _register(tool_name: str, fn):
@@ -289,8 +300,8 @@ _register("draft_response_outline", draft_response_outline_logic)
 # ── Entry point ─────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    print(f"[cheap-agent] profile={_profile}, registered={len(_registered_tools)} tools", file=sys.stderr)
-    print(f"[cheap-agent] tools: {', '.join(_registered_tools)}", file=sys.stderr)
+    logger.info("profile=%s, registered=%d tools", _profile, len(_registered_tools))
+    logger.info("tools: %s", ", ".join(_registered_tools))
 
     if MCP_TRANSPORT == "streamable-http":
         mcp.run(transport="streamable-http")

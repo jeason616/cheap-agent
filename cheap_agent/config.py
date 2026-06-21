@@ -1,10 +1,13 @@
 import os
-import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 
+from cheap_agent.logging_setup import get_logger
+
 load_dotenv()
+
+logger = get_logger("cheap_agent.config")
 
 
 def _env_int(key: str, default: int) -> int:
@@ -14,7 +17,7 @@ def _env_int(key: str, default: int) -> int:
     try:
         return int(raw)
     except ValueError:
-        print(f"[config] Warning: {key}={raw!r} is not a valid int, using default {default}", file=sys.stderr)
+        logger.warning("%s=%r is not a valid int, using default %s", key, raw, default)
         return default
 
 
@@ -25,12 +28,12 @@ def _env_float(key: str, default: float) -> float:
     try:
         return float(raw)
     except ValueError:
-        print(f"[config] Warning: {key}={raw!r} is not a valid float, using default {default}", file=sys.stderr)
+        logger.warning("%s=%r is not a valid float, using default %s", key, raw, default)
         return default
 
 
 WORKSPACE_ROOT: Path = Path(os.getenv("WORKSPACE_ROOT") or os.getcwd()).resolve()
-print(f"[config] WORKSPACE_ROOT={WORKSPACE_ROOT}", file=sys.stderr)
+logger.info("WORKSPACE_ROOT=%s", WORKSPACE_ROOT)
 
 LLM_BASE_URL: str = os.getenv("LLM_BASE_URL", "http://127.0.0.1:11434/v1")
 LLM_API_KEY: str = os.getenv("LLM_API_KEY", "")
@@ -232,8 +235,8 @@ MCP_PORT: int = _env_int("MCP_PORT", 8000)
 MCP_PATH: str = os.getenv("MCP_PATH", "/mcp")
 
 if MCP_TRANSPORT not in ("stdio", "streamable-http"):
-    print(f"[config] Warning: MCP_TRANSPORT={MCP_TRANSPORT!r} is unknown, falling back to stdio", file=sys.stderr)
+    logger.warning("MCP_TRANSPORT=%r is unknown, falling back to stdio", MCP_TRANSPORT)
     MCP_TRANSPORT = "stdio"
 
 if not LLM_API_KEY:
-    print("[config] Warning: LLM_API_KEY is not set", file=sys.stderr)
+    logger.warning("LLM_API_KEY is not set")

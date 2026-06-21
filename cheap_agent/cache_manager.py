@@ -2,11 +2,9 @@ import hashlib
 import json
 import os
 import re
-import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import Any
 
 from cheap_agent.config import (
     CACHE_DIR,
@@ -20,6 +18,9 @@ from cheap_agent.config import (
     PERF_LOG_MAX_ENTRIES,
     WORKSPACE_ROOT,
 )
+from cheap_agent.logging_setup import get_logger
+
+logger = get_logger("cheap_agent.cache_manager")
 
 _SECRET_PATTERNS = [
     re.compile(r"(?i)(api_key|token|secret|password|private_key|access_key|openai_api_key|llm_api_key|authorization|bearer)\s*[=:]\s*\S+"),
@@ -111,7 +112,7 @@ def read_json_cache(path: Path) -> dict | None:
         text = path.read_text(encoding="utf-8", errors="replace")
         return json.loads(text)
     except (json.JSONDecodeError, Exception) as e:
-        print(f"[cache_manager] Failed to read cache {path}: {e}", file=sys.stderr)
+        logger.warning("Failed to read cache %s: %s", path, e)
         return None
 
 
@@ -122,7 +123,7 @@ def write_json_cache_atomic(path: Path, data: dict) -> bool:
             path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
             return True
         except Exception as e:
-            print(f"[cache_manager] Failed to write cache {path}: {e}", file=sys.stderr)
+            logger.warning("Failed to write cache %s: %s", path, e)
             return False
 
     try:
@@ -140,7 +141,7 @@ def write_json_cache_atomic(path: Path, data: dict) -> bool:
                 pass
             return False
     except Exception as e:
-        print(f"[cache_manager] Failed to write cache {path}: {e}", file=sys.stderr)
+        logger.warning("Failed to write cache %s: %s", path, e)
         return False
 
 
@@ -310,7 +311,7 @@ def enforce_cache_size_limit() -> dict:
 
     removed = 0
     freed = 0
-    for path, mtime, size in entries:
+    for path, _mtime, size in entries:
         if total - freed <= limit:
             break
         try:
@@ -350,4 +351,4 @@ def record_tool_perf(tool_name: str, elapsed_sec: float, cache_hit: bool = False
             if len(lines) > PERF_LOG_MAX_ENTRIES:
                 log_path.write_text("\n".join(lines[-PERF_LOG_MAX_ENTRIES:]) + "\n", encoding="utf-8")
     except Exception as e:
-        print(f"[cache_manager] Failed to write perf log: {e}", file=sys.stderr)
+        logger.warning("Failed to write perf log: %s", e)

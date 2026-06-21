@@ -1,10 +1,12 @@
-import sys
 import time
 
 import openai
 from openai import OpenAI
 
 from cheap_agent.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, MAX_OUTPUT_CHARS
+from cheap_agent.logging_setup import get_logger
+
+logger = get_logger("cheap_agent.llm_client")
 
 _client: OpenAI | None = None
 
@@ -54,26 +56,26 @@ def ask_llm(
             text = resp.choices[0].message.content or ""
             return _truncate(text, MAX_OUTPUT_CHARS)
         except openai.AuthenticationError as e:
-            print(f"[llm_client] Authentication failed: {e}", file=sys.stderr)
+            logger.warning("Authentication failed: %s", e)
             return "[LLM Error] Authentication failed - check LLM_API_KEY"
         except openai.APIStatusError as e:
-            print(f"[llm_client] API error {e.status_code}: {e.message}", file=sys.stderr)
+            logger.warning("API error %s: %s", e.status_code, e.message)
             return f"[LLM Error] API returned {e.status_code}: {e.message}"
         except (openai.APITimeoutError, openai.APIConnectionError) as e:
             last_transient_err = (
                 "Request timed out" if isinstance(e, openai.APITimeoutError)
                 else f"Cannot connect to {LLM_BASE_URL} - is the server running?"
             )
-            print(
-                f"[llm_client] transient error (attempt {attempt + 1}/{_MAX_RETRIES + 1}): {e}",
-                file=sys.stderr,
+            logger.warning(
+                "transient error (attempt %d/%d): %s",
+                attempt + 1, _MAX_RETRIES + 1, e,
             )
             if attempt < _MAX_RETRIES:
                 time.sleep(_RETRY_DELAYS[attempt])
                 continue
             return f"[LLM Error] {last_transient_err}"
         except Exception as e:
-            print(f"[llm_client] Unexpected error: {e}", file=sys.stderr)
+            logger.exception("Unexpected error")
             return f"[LLM Error] {e}"
 
     return f"[LLM Error] {last_transient_err}"

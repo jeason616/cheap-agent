@@ -1,6 +1,6 @@
 """Profile management and feature switch logic."""
 
-import sys
+from cheap_agent.logging_setup import get_logger
 
 from cheap_agent.config import (
     DISABLE_ALL_WRITE_TOOLS,
@@ -31,11 +31,13 @@ from cheap_agent.config import (
 )
 from cheap_agent.tool_registry import TOOL_REGISTRY, ToolMeta, VALID_PROFILES
 
+logger = get_logger("cheap_agent.profiles")
+
 
 def get_active_profile() -> str:
     profile = MCP_PROFILE
     if profile not in VALID_PROFILES:
-        print(f"[profiles] Warning: unknown profile '{profile}', falling back to 'safe'", file=sys.stderr)
+        logger.warning("unknown profile %r, falling back to 'safe'", profile)
         return "safe"
     return profile
 
@@ -92,15 +94,15 @@ def is_tool_allowed(tool_name: str) -> bool:
         return False
 
     if ENABLE_ONLY_READ_TOOLS and not meta.read_only:
-        print(f"[profiles] Blocked non-read-only tool: {tool_name}", file=sys.stderr)
+        logger.warning("Blocked non-read-only tool: %s", tool_name)
         return False
 
     if DISABLE_ALL_WRITE_TOOLS and not meta.read_only:
-        print(f"[profiles] Blocked write tool: {tool_name}", file=sys.stderr)
+        logger.warning("Blocked write tool: %s", tool_name)
         return False
 
     if DISABLE_SHELL_TOOLS and "shell" in tool_name.lower():
-        print(f"[profiles] Blocked shell tool: {tool_name}", file=sys.stderr)
+        logger.warning("Blocked shell tool: %s", tool_name)
         return False
 
     return True
