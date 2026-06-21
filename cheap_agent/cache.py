@@ -2,7 +2,12 @@ import hashlib
 import time
 from typing import Any
 
-_cache: dict[str, tuple[float, Any]] = {}
+# Default TTL (seconds) when set_cache is called without an explicit ttl_sec.
+# Matches the historical hardcoded expiry so behavior is unchanged for callers
+# that relied on the old 300s constant.
+DEFAULT_TTL_SEC = 300
+
+_cache: dict[str, tuple[float, Any, float]] = {}
 
 
 def make_hash(text: str) -> str:
@@ -12,15 +17,16 @@ def make_hash(text: str) -> str:
 def get_cache(key: str) -> Any | None:
     if key not in _cache:
         return None
-    ts, value = _cache[key]
-    if time.monotonic() - ts > 300:
+    ts, value, ttl = _cache[key]
+    if time.monotonic() - ts > ttl:
         del _cache[key]
         return None
     return value
 
 
 def set_cache(key: str, value: Any, ttl_sec: int | None = None) -> None:
-    _cache[key] = (time.monotonic(), value)
+    ttl = ttl_sec if ttl_sec and ttl_sec > 0 else DEFAULT_TTL_SEC
+    _cache[key] = (time.monotonic(), value, ttl)
 
 
 def invalidate_cache(prefix: str = "") -> int:
