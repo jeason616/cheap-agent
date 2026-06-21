@@ -18,6 +18,17 @@ def _env_int(key: str, default: int) -> int:
         return default
 
 
+def _env_float(key: str, default: float) -> float:
+    raw = os.getenv(key)
+    if raw is None:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        print(f"[config] Warning: {key}={raw!r} is not a valid float, using default {default}", file=sys.stderr)
+        return default
+
+
 WORKSPACE_ROOT: Path = Path(os.getenv("WORKSPACE_ROOT") or os.getcwd()).resolve()
 print(f"[config] WORKSPACE_ROOT={WORKSPACE_ROOT}", file=sys.stderr)
 
@@ -116,7 +127,7 @@ MAX_CITATION_ITEMS: int = _env_int("MAX_CITATION_ITEMS", 2000)
 
 ENABLE_LLM_PAPER_REVIEW: bool = os.getenv("ENABLE_LLM_PAPER_REVIEW", "true").lower() == "true"
 PAPER_LLM_MAX_TOKENS: int = _env_int("PAPER_LLM_MAX_TOKENS", 1200)
-PAPER_LLM_TEMPERATURE: float = float(os.getenv("PAPER_LLM_TEMPERATURE", "0.1"))
+PAPER_LLM_TEMPERATURE: float = _env_float("PAPER_LLM_TEMPERATURE", 0.1)
 
 PAPER_CACHE_DIR: str = os.getenv("PAPER_CACHE_DIR", ".code_agent_cache/paper")
 

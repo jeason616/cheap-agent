@@ -1,6 +1,13 @@
-"""Quick smoke tests for cheap-agent components (no MCP client needed)."""
+"""Quick smoke tests for cheap-agent components (no MCP client needed).
+
+The LLM-touching tests are marked `integration` — skipped by default
+(see pyproject.toml addopts) because they require live LLM credentials
+and incur real cost. Run with:  pytest -m integration
+"""
 
 import sys
+
+import pytest
 
 
 def test_config():
@@ -37,6 +44,7 @@ def test_workspace():
     print("[PASS] workspace\n")
 
 
+@pytest.mark.integration
 def test_llm():
     from cheap_agent.llm_client import ask_llm
     result = ask_llm("You are a test assistant.", "Say 'hello' in one word.", max_tokens=16)
@@ -45,10 +53,11 @@ def test_llm():
     print("[PASS] llm\n")
 
 
+@pytest.mark.integration
 def test_review():
     from cheap_agent.tools.code import review_file_logic
-    result = review_file_logic("config.py")
-    print(f"review_file_logic('config.py') -> {len(result)} chars")
+    result = review_file_logic("cheap_agent/config.py")
+    print(f"review_file_logic('cheap_agent/config.py') -> {len(result)} chars")
     print(result[:500])
     assert len(result) > 50, "Review output too short"
     print("[PASS] review_file_logic\n")
