@@ -1,11 +1,17 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
 from cheap_agent.logging_setup import get_logger
 
-load_dotenv()
+# `load_dotenv()` with no args searches upward from the CALLING file's
+# directory (this file = cheap_agent/config.py). That works from source, but
+# after a `uv tool` / pipx install config.py lives inside the tool's isolated
+# venv (site-packages), so the search never reaches the user's project .env.
+# usecwd=True searches upward from os.getcwd() instead — the project the MCP
+# client launched us in — matching the documented cwd-based behavior.
+load_dotenv(find_dotenv(usecwd=True))
 
 logger = get_logger("cheap_agent.config")
 
